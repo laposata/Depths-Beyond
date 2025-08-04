@@ -1,0 +1,9 @@
+{
+  "type": "depths_beyond:dungeondim_type",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "layers": []
+    }
+  }
+}

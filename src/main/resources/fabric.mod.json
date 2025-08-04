@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "depths_beyond",
+  "version": "${version}",
+  "name": "Depths Beyond",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/depths_beyond/icon.png",
+  "accessWidener": "depths_beyond.accesswidener",
+  "entrypoints": {
+    "fabric-datagen": [
+      "com.dreamtea.depths_beyond.data.DepthsBeyondModDataGenerator"
+    ],
+    "main": [
+      "com.dreamtea.depths_beyond.DepthsBeyondMod"
+    ]
+  },
+  "mixins": [
+    "depths_beyond.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
