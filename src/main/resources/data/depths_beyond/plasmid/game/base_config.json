@@ -1,0 +1,26 @@
+{
+  "type": "depths_beyond:dungeon",
+  "message": "A Message",
+  "mobTables": {
+    "zombie_basic": {
+      "maxSpawns": 5,
+      "attempts": 1,
+      "mobs": {
+        "minecraft:zombie": 10,
+        "minecraft:zombie_villager": 1
+      },
+      "minRange": 2,
+      "maxRange": 20
+    },
+    "zombie_skeleton": {
+      "maxSpawns": 3,
+      "attempts": 1,
+      "mobs": {
+        "minecraft:zombie": 1,
+        "minecraft:skeleton": 1
+      },
+      "minRange": 10,
+      "maxRange": 50
+    }
+  }
+}
