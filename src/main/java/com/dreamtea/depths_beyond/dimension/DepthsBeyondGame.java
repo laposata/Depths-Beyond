@@ -7,6 +7,7 @@ import com.dreamtea.depths_beyond.imixin.IPlayDepthsBelow;
 import com.dreamtea.depths_beyond.imixin.ITrackGameRuns;
 import com.dreamtea.depths_beyond.items.DungeonCompass;
 import com.dreamtea.depths_beyond.items.DungeonTool;
+import com.dreamtea.depths_beyond.nucleoid.DBGamePlayerEvents;
 import com.dreamtea.depths_beyond.stats.GameConstants;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerInventory;
@@ -77,6 +78,7 @@ public class DepthsBeyondGame {
             activity.listen(GameActivityEvents.TICK, game::onTick);
             activity.listen(GamePlayerEvents.LEAVE, game::onPlayerLeave);
             activity.listen(GamePlayerEvents.REMOVE, game::onPlayerLeave);
+            activity.listen(DBGamePlayerEvents.LAND, game::onPlayerLand);
             if(world instanceof ITrackGameRuns itgr){
                 itgr.setGame(game);
             }
@@ -87,8 +89,8 @@ public class DepthsBeyondGame {
         return regions.get(RegionType.START).getFirst();
     }
     private void onPlayerLeave(ServerPlayerEntity player) {
-        DungeonRun playerPreGameState = playerStates.get(player.getUuid());
-        playerPreGameState.resetPlayerState(player);
+        DungeonRun playerState = playerStates.get(player.getUuid());
+        playerState.finalizePlayerInventory(player);
         if(player instanceof IPlayDepthsBelow ipdb){
             ipdb.leaveRun();
         }
@@ -171,5 +173,9 @@ public class DepthsBeyondGame {
     }
     public List<DungeonRun> getPlayers(Collection<UUID> players){
         return players.stream().map(this.playerStates::get).toList();
+    }
+
+    public void onPlayerLand(ServerPlayerEntity player){
+        playerStates.get(player.getUuid()).resetPlayerState(player);
     }
 }

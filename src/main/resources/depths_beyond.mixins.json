@@ -4,6 +4,9 @@
   "package": "com.dreamtea.depths_beyond.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "nucleoid.IsolatingPlayerTeleporterMixin",
+    "nucleoid.ManagedGameSpaceMixin",
+    "nucleoid.ManagedGameSpacePlayersMixin",
     "ServerPlayerEntityMixin",
     "ServerWorldMixin"
   ],

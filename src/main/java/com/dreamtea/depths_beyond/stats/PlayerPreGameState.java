@@ -36,11 +36,10 @@ public record PlayerPreGameState(
         return items;
     }
 
-    public void resetPlayerState(ServerPlayerEntity player){
-        PlayerInventory dungeonInventory = player.getInventory();
+    public void resetPlayerState(ServerPlayerEntity player, List<ItemStack> finalInventory){
         List<ItemStack> leavesDungeon = new ArrayList<>();
         //checks inventory of the player leaving and allows them to keep these items
-        dungeonInventory.forEach(i -> {
+        finalInventory.forEach(i -> {
             if(DungeonLoot.mayLeaveDungeon(i)){
                 leavesDungeon.add(i);
             }

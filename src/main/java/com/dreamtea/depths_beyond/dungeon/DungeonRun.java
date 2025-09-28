@@ -21,11 +21,14 @@ public class DungeonRun {
     private boolean started;
     private ServerPlayerEntity player;
     private Map<Integer, ItemStack> itemsKept;
+    private List<ItemStack> finalInventory;
+
     public DungeonRun(ServerPlayerEntity player){
         initState = new PlayerPreGameState(player);
         this.player = player;
         this.stats = new GameStats();
     }
+
     public void cachePlayerInventory(){
         Map<Integer, ItemStack> enterDungeon = new HashMap<>();
         PlayerInventory inventory = player.getInventory();
@@ -41,6 +44,12 @@ public class DungeonRun {
     public void initPlayerInventory(){
         itemsKept.forEach(player.getInventory()::setStack);
     }
+
+    public void finalizePlayerInventory(ServerPlayerEntity player){
+        var inventory = new ArrayList<ItemStack>();
+        player.getInventory().forEach(inventory::add);
+        this.finalInventory = inventory;
+    }
     public boolean hasStartedRun(){
         return started;
     }
@@ -51,7 +60,7 @@ public class DungeonRun {
         stats.tickFear(player);
     }
     public void resetPlayerState(ServerPlayerEntity player){
-        initState.resetPlayerState(player);
+        initState.resetPlayerState(player, finalInventory);
     }
 
     public void findGoal(){
