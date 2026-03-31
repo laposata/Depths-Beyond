@@ -2,34 +2,32 @@ package com.dreamtea.depths_beyond.dungeon.regions;
 
 import com.dreamtea.depths_beyond.config.DepthsBeyondConfig;
 import com.dreamtea.depths_beyond.data.region_data.GateRegionData;
+import com.dreamtea.depths_beyond.temp.TemplateRegion;
 import com.dreamtea.depths_beyond.utils.RegionUtils;
-import net.minecraft.block.BlockState;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import xyz.nucleoid.map_templates.TemplateRegion;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class GateRegion extends Region {
     private final Map<BlockPos, BlockState> blocks;
-    public final String name;
-    public GateRegion(TemplateRegion region, ServerWorld world, DepthsBeyondConfig config) {
-        super(region, world, config);
-        this.name = RegionUtils.getData(GateRegionData.CODEC, region).name();
+    public GateRegion(TemplateRegion region, ServerLevel world, String regionName, String groupName, DepthsBeyondConfig config) {
+        super(region, world, regionName, groupName, config);
         blocks = new HashMap<>();
-        getRegion().getBounds().forEach(pos -> {
-            blocks.put(new BlockPos(pos.getX(), pos.getY(), pos.getZ()), world.getBlockState(pos));
-        });
+//        getRegion().getBounds().forEach(pos -> {
+//            blocks.put(new BlockPos(pos.getX(), pos.getY(), pos.getZ()), world.getBlockState(pos));
+//        });
     }
 
     public void openGate(){
         getRegion().getBounds().forEach(pos -> {
-            world.breakBlock(pos, false);
+            world.destroyBlock(pos, false);
         });
     }
 
     public void closeGate(){
-        blocks.forEach(world::setBlockState);
+        blocks.forEach(world::setBlockAndUpdate);
     }
 }

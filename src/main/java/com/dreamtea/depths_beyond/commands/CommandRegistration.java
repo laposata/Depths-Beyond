@@ -1,17 +1,21 @@
 package com.dreamtea.depths_beyond.commands;
 
-import com.dreamtea.depths_beyond.items.DungeonLoot;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.minecraft.command.EntitySelector;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.server.command.CommandManager;
+
+import com.dreamtea.depths_beyond.commands.argument.StatArgumentType;
+import com.dreamtea.depths_beyond.commands.argument.StatArgumentTypeSerializer;
+import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
+
+import static com.dreamtea.depths_beyond.DepthsBeyondMod.ofDB;
 
 public class CommandRegistration {
     public static void init(){
+        ArgumentTypeRegistry.registerArgumentType(
+                ofDB("stat_type"),
+                StatArgumentType.class,
+                new StatArgumentTypeSerializer()
+        );
         DungeonLootCommands.registerCommands();
-        AddFearCommand.registerCommands();
+        StatCommands.registerCommands();
         GateCommand.registerCommands();
     }
 }

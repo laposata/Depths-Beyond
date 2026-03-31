@@ -2,11 +2,11 @@ package com.dreamtea.depths_beyond.mixin;
 
 import com.dreamtea.depths_beyond.dimension.DepthsBeyondGame;
 import com.dreamtea.depths_beyond.imixin.ITrackGameRuns;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
 import org.spongepowered.asm.mixin.Mixin;
 
-@Mixin(ServerWorld.class)
-public class ServerWorldMixin implements ITrackGameRuns {
+@Mixin(ServerLevel.class)
+public class ServerLevelMixin implements ITrackGameRuns {
 
     private DepthsBeyondGame game;
 

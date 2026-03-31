@@ -3,24 +3,25 @@ package com.dreamtea.depths_beyond.dungeon.regions;
 import com.dreamtea.depths_beyond.config.DepthsBeyondConfig;
 import com.dreamtea.depths_beyond.data.region_data.MobRegionData;
 import com.dreamtea.depths_beyond.data.MobSpawnerData;
+import com.dreamtea.depths_beyond.temp.TemplateRegion;
 import com.dreamtea.depths_beyond.utils.RegionUtils;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.random.Random;
-import xyz.nucleoid.map_templates.BlockBounds;
-import xyz.nucleoid.map_templates.TemplateRegion;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.phys.Vec3;
+//import xyz.nucleoid.map_templates.BlockBounds;
+//import xyz.nucleoid.map_templates.TemplateRegion;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class MobSpawnerRegion extends Region{
-    private final BlockBounds pos;
-    private final Vec3d center;
+    private final TemplateRegion.BlockBounds pos;
+    private final Vec3 center;
     private final Map<String, Integer> mobs;
     private final int totalWeights;
     private final int maxSpawns;
@@ -29,8 +30,8 @@ public class MobSpawnerRegion extends Region{
     private final int minRange;
     private final int maxRange;
 
-    public MobSpawnerRegion(TemplateRegion region, ServerWorld world, DepthsBeyondConfig config){
-        super(region, world, config);
+    public MobSpawnerRegion(TemplateRegion region, ServerLevel world, String regionName, String groupName, DepthsBeyondConfig config){
+        super(region, world, regionName, groupName, config);
         var data = config.getMobTable(RegionUtils.getData(MobRegionData.CODEC, region).table());
         if(data == null){
             data = MobSpawnerData.BLANK;
@@ -46,21 +47,23 @@ public class MobSpawnerRegion extends Region{
         spawnedCreatures = new ArrayList<>();
     }
 
-    private EntityType<?> summonEntity(Random r){
+    private EntityType<?> summonEntity(RandomSource r){
         if(mobs.isEmpty()){
             return null;
         }
-        var val = r.nextBetween(0, totalWeights + 1);
+        var val = r.nextIntBetweenInclusive(0, totalWeights + 1);
         for(var mobSet: mobs.entrySet()){
             if(mobSet.getValue() >= val) {
-                return EntityType.get(mobSet.getKey()).orElse(null);
+                return EntityType.byString(
+                        mobSet.getKey()
+                ).orElse(null);
             }
             val -= mobSet.getValue();
         }
         return null;
     }
 
-    public void summonMob(ServerPlayerEntity player, ServerWorld world) {
+    public void summonMob(ServerPlayer player, ServerLevel world) {
         var deadCreatures = new ArrayList<Entity>();
         spawnedCreatures.forEach(spawnedCreature -> {
             if(spawnedCreature == null || !spawnedCreature.isAlive()){
@@ -71,7 +74,7 @@ public class MobSpawnerRegion extends Region{
         if(spawnedCreatures.size() >= maxSpawns){
             return;
         }
-        var dist = player.getPos().distanceTo(center);
+        var dist = player.position().distanceTo(center);
         if(dist < minRange || dist > maxRange){
             return;
         }
@@ -82,11 +85,11 @@ public class MobSpawnerRegion extends Region{
                         world,
                         null,
                         pos.sampleBlock(world.getRandom()),
-                        SpawnReason.MOB_SUMMONED,
+                        EntitySpawnReason.MOB_SUMMONED,
                         false,
                         false
                 );
-                world.spawnEntity(mob);
+                world.addFreshEntity(mob);
                 spawnedCreatures.add(mob);
             }
         }

@@ -1,7 +1,7 @@
 package com.dreamtea.depths_beyond.dungeon;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.UUID;
 

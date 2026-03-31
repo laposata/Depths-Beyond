@@ -1,13 +1,15 @@
 package com.dreamtea.depths_beyond.dungeon;
 
+import com.dreamtea.depths_beyond.data.PlayerPreGameState;
 import com.dreamtea.depths_beyond.items.DungeonLoot;
 import com.dreamtea.depths_beyond.stats.DropType;
 import com.dreamtea.depths_beyond.stats.GameStats;
-import com.dreamtea.depths_beyond.stats.PlayerPreGameState;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.random.Random;
+import com.dreamtea.depths_beyond.stats.StatType;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
+
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,27 +21,11 @@ public class DungeonRun {
     private final GameStats stats;
     private boolean foundGoal;
     private boolean started;
-    private ServerPlayerEntity player;
-    private Map<Integer, ItemStack> itemsKept;
-    public DungeonRun(ServerPlayerEntity player){
+    private ServerPlayer player;
+    public DungeonRun(ServerPlayer player){
         initState = new PlayerPreGameState(player);
         this.player = player;
-        this.stats = new GameStats();
-    }
-    public void cachePlayerInventory(){
-        Map<Integer, ItemStack> enterDungeon = new HashMap<>();
-        PlayerInventory inventory = player.getInventory();
-        for(int i = 0; i < inventory.size(); i ++){
-            ItemStack item = inventory.getStack(i);
-            if(DungeonLoot.mayEnterDungeon(item)){
-                enterDungeon.put(i, item);
-            }
-        }
-        itemsKept = enterDungeon;
-    }
-
-    public void initPlayerInventory(){
-        itemsKept.forEach(player.getInventory()::setStack);
+        this.stats = new GameStats(player);
     }
     public boolean hasStartedRun(){
         return started;
@@ -47,10 +33,10 @@ public class DungeonRun {
     public void startRun(){
         started = true;
     }
-    public void tickPlayer(ServerPlayerEntity player){
-        stats.tickFear(player);
+    public void tickPlayer(){
+        stats.tickFear();
     }
-    public void resetPlayerState(ServerPlayerEntity player){
+    public void resetPlayerState(ServerPlayer player){
         initState.resetPlayerState(player);
     }
 
@@ -62,19 +48,21 @@ public class DungeonRun {
         return foundGoal;
     }
 
-    public DropType dropLoot(Random r){
+    public DropType dropLoot(RandomSource r){
         if(stats.shouldDrop(r)){
             return stats.getDrop(r);
         }
         return null;
     }
 
-    public void setFear(float amount){
-        stats.setFear(player, amount);
+    public void setStat(StatType stat, float amount){
+        stats.setStat(stat, amount);
     }
-
-    public void addFear(float amount){
-        stats.changeFear(player, amount);
+    public void addStat(StatType stat, float amount){
+        stats.changeStat(stat, amount);
+    }
+    public float getStat(StatType stat){
+        return stats.getStat(stat);
     }
 
 }

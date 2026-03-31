@@ -1,12 +1,12 @@
 package com.dreamtea.depths_beyond.dungeon.regions;
 
 import com.dreamtea.depths_beyond.config.DepthsBeyondConfig;
-import net.minecraft.server.world.ServerWorld;
-import xyz.nucleoid.map_templates.TemplateRegion;
+import com.dreamtea.depths_beyond.temp.TemplateRegion;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.StringUtil;
+//import xyz.nucleoid.map_templates.TemplateRegion;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public enum RegionType {
@@ -18,6 +18,7 @@ public enum RegionType {
     ENEMY(MobSpawnerRegion::new),
     HUNTER(HunterRegion::new),
     GOAL(Region::new),
+    TRIGGER(TriggerRegion::new),
     OTHER(Region::new);
     private final RegionInit constructor;
 
@@ -33,15 +34,23 @@ public enum RegionType {
         }
     }
 
-    public static Map<RegionType, List<Region>> sortRegions(Collection<TemplateRegion> regions, ServerWorld world, DepthsBeyondConfig config){
+    public static Map<RegionType, List<Region>> sortRegions(Collection<TemplateRegion> regions, ServerLevel world, DepthsBeyondConfig config){
+        Set<String> regionNames = new HashSet<>();
         return regions.stream().map(r -> {
             RegionType type = fromString(r.getMarker());
-            return type.constructor.create(r, world, config);
+            String regionName = r.getName();
+            if(!StringUtil.isNullOrEmpty(regionName) && !regionNames.add(regionName)){
+                throw new IllegalStateException(
+                        "Cannot have multiple regions with the same name. To connect multiple regions use `groupName`.\n"+
+                        "Shared Name: " + regionName
+                );
+            }
+            return type.constructor.create(r, world, r.getName(), r.getGroup(), config);
         } ).collect(Collectors.groupingBy(Region::getType));
     }
 
     @FunctionalInterface
     public interface RegionInit{
-        Region create(TemplateRegion region, ServerWorld world, DepthsBeyondConfig config);
+        Region create(TemplateRegion region, ServerLevel world, String regionName, String groupName, DepthsBeyondConfig config);
     }
 }

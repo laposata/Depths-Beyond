@@ -3,32 +3,33 @@ package com.dreamtea.depths_beyond.dungeon.regions;
 import com.dreamtea.depths_beyond.config.DepthsBeyondConfig;
 import com.dreamtea.depths_beyond.data.region_data.HunterRegionData;
 import com.dreamtea.depths_beyond.stats.GameConstants;
+import com.dreamtea.depths_beyond.temp.TemplateRegion;
 import com.dreamtea.depths_beyond.utils.RegionUtils;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import xyz.nucleoid.map_templates.TemplateRegion;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+//import xyz.nucleoid.map_templates.TemplateRegion;
 
 public class HunterRegion extends Region {
     private final EntityType<?> hunterType;
     private Entity hunter;
-    public HunterRegion(TemplateRegion region, ServerWorld world, DepthsBeyondConfig config) {
-        super(region, world, config);
+    public HunterRegion(TemplateRegion region, ServerLevel world, String regionName, String groupName, DepthsBeyondConfig config) {
+        super(region, world, regionName, groupName, config);
         this.hunterType = RegionUtils.getData(HunterRegionData.CODEC, region).hunter();
     }
 
-    public void tickHunter(ServerPlayerEntity player, ServerWorld world){
-        if(player.age % GameConstants.HUNTER_SPAWN_CHECK_FREQUENCY == 0){
+    public void tick(ServerPlayer player){
+        if(player.tickCount % GameConstants.HUNTER_SPAWN_CHECK_FREQUENCY == 0){
             summonMob(player, world);
         }
     }
 
-    private void summonMob(ServerPlayerEntity player, ServerWorld world) {
+    private void summonMob(ServerPlayer player, ServerLevel world) {
         if(hunterType == null) return;
         if(hunter != null && hunter.isAlive()) return;
-        var dist = player.getPos().distanceTo(getRegion().getBounds().center());
+        var dist = player.position().distanceTo(getRegion().getBounds().center());
         if(dist < GameConstants.MIN_HUNTER_SPAWN_RANGE || dist > GameConstants.MAX_HUNTER_SPAWN_RANGE){
             return;
         }
@@ -36,12 +37,13 @@ public class HunterRegion extends Region {
                 world,
                 null,
                 getRegion().getBounds().sampleBlock(world.getRandom()),
-                SpawnReason.MOB_SUMMONED,
+                EntitySpawnReason.MOB_SUMMONED,
                 false,
                 false
         );
-        world.spawnEntity(mob);
-        hunter = mob;
-
+        if(mob != null){
+            world.addFreshEntity(mob);
+            hunter = mob;
+        }
     }
 }
