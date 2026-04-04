@@ -1,6 +1,7 @@
 package com.dreamtea.depths_beyond.dungeon.regions;
 
 import com.dreamtea.depths_beyond.config.DepthsBeyondConfig;
+import com.dreamtea.depths_beyond.stats.GameStats;
 import com.dreamtea.depths_beyond.temp.TemplateRegion;
 import net.minecraft.server.level.ServerLevel;
 
@@ -37,4 +38,5 @@ public class Region {
     public RegionType getType(){
         return type;
     }
+    public void tick(GameStats game){}
 }

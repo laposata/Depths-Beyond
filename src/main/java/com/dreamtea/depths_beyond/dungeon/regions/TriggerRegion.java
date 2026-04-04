@@ -100,7 +100,7 @@ public class TriggerRegion extends Region {
         var playerPresent = getRegion().getBounds().asBox().contains(player.position());
         if(!playerPresent){
             if(lastEntered != null){
-                //If the player has a record of entering the area but currently is not in it, remove the entry
+                //If the player has min record of entering the area but currently is not in it, remove the entry
                 playerEnters.remove(player.getUUID());
                 playerTriggers.remove(player.getUUID());
             }

@@ -3,6 +3,7 @@ package com.dreamtea.depths_beyond.stats;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
+import org.jetbrains.annotations.NotNull;
 
 public class GameStats {
     private float greed = 10;
@@ -12,7 +13,7 @@ public class GameStats {
     private float focus = 0;
     private float fear = 0;
     private final ServerPlayer player;
-    public GameStats(ServerPlayer player){
+    public GameStats(@NotNull ServerPlayer player){
         this.player = player;
     }
     public void changeStat(StatType type, float amount){
@@ -25,7 +26,12 @@ public class GameStats {
             case FEAR -> changeFear(amount);
         }
     }
-
+    public RandomSource random(){
+        return player.getRandom();
+    }
+    public ServerPlayer getPlayer() {
+        return player;
+    }
     public void setStat(StatType type, float amount){
         switch (type){
             case GREED -> greed = amount;
@@ -73,14 +79,18 @@ public class GameStats {
         return (100f + skill)/(100f);
     }
 
-    public boolean shouldDrop(RandomSource r){
+    public float getLuckModifier(){
+        return calcPercentModifier(luck);
+    }
+
+    public boolean shouldDrop(){
         var chance = calcPercentModifier(luck) * GameConstants.BASE_LOOT_CHANCE;
-        var value = r.nextIntBetweenInclusive(0, GameConstants.BASE_CHANCE_SCALE);
+        var value = random().nextIntBetweenInclusive(0, GameConstants.BASE_CHANCE_SCALE);
         return value < chance;
     }
 
-    public DropType getDrop(RandomSource r){
-        float number = r.nextFloat() * (greed + wit + decadence);
+    public DropType getDrop(){
+        float number = random().nextFloat() * (greed + wit + decadence);
         number -= decadence;
         if(number < 0) return DropType.NOTHING;
         if(number > wit) return DropType.MONEY;

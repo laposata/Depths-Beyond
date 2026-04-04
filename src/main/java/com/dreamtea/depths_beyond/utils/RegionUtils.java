@@ -1,10 +1,11 @@
 package com.dreamtea.depths_beyond.utils;
 
-import com.dreamtea.depths_beyond.dungeon.regions.GateRegion;
 import com.dreamtea.depths_beyond.dungeon.regions.Region;
 import com.dreamtea.depths_beyond.dungeon.regions.RegionType;
 import com.dreamtea.depths_beyond.temp.TemplateRegion;
 import com.mojang.serialization.Codec;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.NbtOps;
 
 import java.util.Collection;
@@ -31,5 +32,12 @@ public class RegionUtils {
 
     public static List<Region> getRegionsByGroup(Map<RegionType, List<Region>> regions, String name){
         return regions.values().stream().flatMap(Collection::stream).filter(r -> (r.getGroupName().equals(name))).toList();
+    }
+
+    public static TemplateRegion.BlockBounds expandRegion(Region region, Vec3i externalBuffer){
+        TemplateRegion.BlockBounds bound = region.getRegion().getBounds();
+        BlockPos min = bound.min().offset(externalBuffer.multiply(-1));
+        BlockPos max = bound.max().offset(externalBuffer);
+        return new TemplateRegion.BlockBounds(min, max);
     }
 }

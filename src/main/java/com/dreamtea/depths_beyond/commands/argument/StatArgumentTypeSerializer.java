@@ -5,8 +5,6 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.network.FriendlyByteBuf;
 
-import java.util.Objects;
-
 public class StatArgumentTypeSerializer implements ArgumentTypeInfo<StatArgumentType, StatArgumentTypeSerializer.Template> {
     public void serializeToNetwork(final StatArgumentTypeSerializer.Template template, final FriendlyByteBuf out) {
     }

@@ -1,8 +1,10 @@
 package com.dreamtea.depths_beyond.dungeon.regions;
 
 import com.dreamtea.depths_beyond.config.DepthsBeyondConfig;
-import com.dreamtea.depths_beyond.data.region_data.MobRegionData;
 import com.dreamtea.depths_beyond.data.MobSpawnerData;
+import com.dreamtea.depths_beyond.data.region_data.MobRegionData;
+import com.dreamtea.depths_beyond.dungeon.RegionManager;
+import com.dreamtea.depths_beyond.stats.GameStats;
 import com.dreamtea.depths_beyond.temp.TemplateRegion;
 import com.dreamtea.depths_beyond.utils.RegionUtils;
 import net.minecraft.server.level.ServerLevel;
@@ -12,12 +14,13 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.Vec3;
-//import xyz.nucleoid.map_templates.BlockBounds;
-//import xyz.nucleoid.map_templates.TemplateRegion;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+//import xyz.nucleoid.map_templates.BlockBounds;
+//import xyz.nucleoid.map_templates.TemplateRegion;
 
 public class MobSpawnerRegion extends Region{
     private final TemplateRegion.BlockBounds pos;
@@ -29,6 +32,7 @@ public class MobSpawnerRegion extends Region{
     private final List<Entity> spawnedCreatures;
     private final int minRange;
     private final int maxRange;
+    private int cooldown = 0;
 
     public MobSpawnerRegion(TemplateRegion region, ServerLevel world, String regionName, String groupName, DepthsBeyondConfig config){
         super(region, world, regionName, groupName, config);
@@ -51,7 +55,7 @@ public class MobSpawnerRegion extends Region{
         if(mobs.isEmpty()){
             return null;
         }
-        var val = r.nextIntBetweenInclusive(0, totalWeights + 1);
+        var val = r.nextIntBetweenInclusive(0, totalWeights);
         for(var mobSet: mobs.entrySet()){
             if(mobSet.getValue() >= val) {
                 return EntityType.byString(
@@ -61,6 +65,14 @@ public class MobSpawnerRegion extends Region{
             val -= mobSet.getValue();
         }
         return null;
+    }
+
+    public void tick(GameStats stats){
+        if(cooldown > 0){
+            cooldown -= RegionManager.TICK_FREQUENCY;
+            return;
+        }
+        summonMob(stats.getPlayer(), stats.getPlayer().level());
     }
 
     public void summonMob(ServerPlayer player, ServerLevel world) {
@@ -86,11 +98,14 @@ public class MobSpawnerRegion extends Region{
                         null,
                         pos.sampleBlock(world.getRandom()),
                         EntitySpawnReason.MOB_SUMMONED,
-                        false,
-                        false
+                        true,
+                        true
                 );
-                world.addFreshEntity(mob);
-                spawnedCreatures.add(mob);
+                if(mob != null){
+                    cooldown = 200;
+                    world.addFreshEntity(mob);
+                    spawnedCreatures.add(mob);
+                }
             }
         }
     }

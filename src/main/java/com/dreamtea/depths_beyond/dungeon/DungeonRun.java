@@ -1,20 +1,10 @@
 package com.dreamtea.depths_beyond.dungeon;
 
 import com.dreamtea.depths_beyond.data.PlayerPreGameState;
-import com.dreamtea.depths_beyond.items.DungeonLoot;
 import com.dreamtea.depths_beyond.stats.DropType;
 import com.dreamtea.depths_beyond.stats.GameStats;
 import com.dreamtea.depths_beyond.stats.StatType;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.item.ItemStack;
-
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class DungeonRun {
     private final PlayerPreGameState initState;
@@ -48,9 +38,9 @@ public class DungeonRun {
         return foundGoal;
     }
 
-    public DropType dropLoot(RandomSource r){
-        if(stats.shouldDrop(r)){
-            return stats.getDrop(r);
+    public DropType dropLoot(){
+        if(stats.shouldDrop()){
+            return stats.getDrop();
         }
         return null;
     }

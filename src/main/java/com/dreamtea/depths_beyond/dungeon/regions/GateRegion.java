@@ -1,9 +1,7 @@
 package com.dreamtea.depths_beyond.dungeon.regions;
 
 import com.dreamtea.depths_beyond.config.DepthsBeyondConfig;
-import com.dreamtea.depths_beyond.data.region_data.GateRegionData;
 import com.dreamtea.depths_beyond.temp.TemplateRegion;
-import com.dreamtea.depths_beyond.utils.RegionUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
@@ -16,9 +14,9 @@ public class GateRegion extends Region {
     public GateRegion(TemplateRegion region, ServerLevel world, String regionName, String groupName, DepthsBeyondConfig config) {
         super(region, world, regionName, groupName, config);
         blocks = new HashMap<>();
-//        getRegion().getBounds().forEach(pos -> {
-//            blocks.put(new BlockPos(pos.getX(), pos.getY(), pos.getZ()), world.getBlockState(pos));
-//        });
+        getRegion().getBounds().forEach(pos -> {
+            blocks.put(new BlockPos(pos.getX(), pos.getY(), pos.getZ()), world.getBlockState(pos));
+        });
     }
 
     public void openGate(){

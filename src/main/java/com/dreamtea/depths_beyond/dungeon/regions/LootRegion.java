@@ -4,26 +4,21 @@ import com.dreamtea.depths_beyond.config.DepthsBeyondConfig;
 import com.dreamtea.depths_beyond.data.region_data.LootDropRegionData;
 import com.dreamtea.depths_beyond.dungeon.DungeonRun;
 import com.dreamtea.depths_beyond.stats.DropType;
-import com.dreamtea.depths_beyond.stats.GameConstants;
+import com.dreamtea.depths_beyond.temp.TemplateRegion;
 import com.dreamtea.depths_beyond.utils.RegionUtils;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.RegistryLayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
-import com.dreamtea.depths_beyond.temp.TemplateRegion;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
-//import xyz.nucleoid.map_templates.TemplateRegion;
 
 import java.util.List;
 
-import static com.dreamtea.depths_beyond.DepthsBeyondMod.ofDB;
 import static com.dreamtea.depths_beyond.utils.RegistryUtils.getLootTable;
+
+//import xyz.nucleoid.map_templates.TemplateRegion;
 
 public class LootRegion extends Region {
     private final LootTable moneyTable;
@@ -63,7 +58,7 @@ public class LootRegion extends Region {
 
     public static void tickLoot(List<Region> lootRegions, ServerPlayer player, DungeonRun run){
         if(player.tickCount % 10 != 0) return;
-        DropType type = run.dropLoot(player.getRandom());
+        DropType type = run.dropLoot();
         if(type == null) return;
         var validRegions = lootRegions.stream().filter(r -> {
 //            var playerDist = r.getRegion().getBounds().centerBottom().distanceTo(player.getPos());

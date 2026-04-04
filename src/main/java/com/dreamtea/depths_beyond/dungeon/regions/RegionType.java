@@ -19,7 +19,7 @@ public enum RegionType {
     HUNTER(HunterRegion::new),
     GOAL(Region::new),
     TRIGGER(TriggerRegion::new),
-    OTHER(Region::new);
+    NONE(Region::new);
     private final RegionInit constructor;
 
     RegionType(RegionInit constructor) {
@@ -30,7 +30,7 @@ public enum RegionType {
         try {
             return RegionType.valueOf(regionType.toUpperCase());
         } catch (Exception e){
-            return OTHER;
+            return NONE;
         }
     }
 

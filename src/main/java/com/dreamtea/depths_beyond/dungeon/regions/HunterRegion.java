@@ -3,6 +3,7 @@ package com.dreamtea.depths_beyond.dungeon.regions;
 import com.dreamtea.depths_beyond.config.DepthsBeyondConfig;
 import com.dreamtea.depths_beyond.data.region_data.HunterRegionData;
 import com.dreamtea.depths_beyond.stats.GameConstants;
+import com.dreamtea.depths_beyond.stats.GameStats;
 import com.dreamtea.depths_beyond.temp.TemplateRegion;
 import com.dreamtea.depths_beyond.utils.RegionUtils;
 import net.minecraft.server.level.ServerLevel;
@@ -20,9 +21,9 @@ public class HunterRegion extends Region {
         this.hunterType = RegionUtils.getData(HunterRegionData.CODEC, region).hunter();
     }
 
-    public void tick(ServerPlayer player){
-        if(player.tickCount % GameConstants.HUNTER_SPAWN_CHECK_FREQUENCY == 0){
-            summonMob(player, world);
+    public void tick(GameStats stats){
+        if(stats.getPlayer().tickCount % GameConstants.HUNTER_SPAWN_CHECK_FREQUENCY == 0){
+            summonMob(stats.getPlayer(), world);
         }
     }
 

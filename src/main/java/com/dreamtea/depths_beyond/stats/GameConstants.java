@@ -15,7 +15,7 @@ public class GameConstants {
     public static final int BASE_COMPASS_WAVER_CHANCE = 5;
     public static final int FEAR_PER_LEVEL = 100;
     /**
-     * How many ticks between a fear increase
+     * How many ticks between min fear increase
      */
     public static final int BASE_FEAR_TICK_DELAY = 60;
     /**

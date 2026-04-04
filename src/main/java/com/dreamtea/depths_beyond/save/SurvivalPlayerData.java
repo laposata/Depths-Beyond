@@ -30,11 +30,21 @@ public class SurvivalPlayerData extends SavedData {
 
     private final Map<String, PlayerPreGameState> saveStates;
 
-    public SurvivalPlayerData(){
+    private SurvivalPlayerData(){
         saveStates = new HashMap<>();
     }
-    public SurvivalPlayerData(Map<String, PlayerPreGameState> states){
+
+    private SurvivalPlayerData(Map<String, PlayerPreGameState> states){
         saveStates = new HashMap<>(states);
+    }
+
+    public PlayerPreGameState getPlayerState(String uuid){
+        return saveStates.getOrDefault(uuid, null);
+    }
+
+    public void savePlayer(PlayerPreGameState state){
+        saveStates.put(state.playerId().toString(), state);
+        setDirty();
     }
 
     private Map<String, PlayerPreGameState> getSaveStates(){
@@ -42,14 +52,13 @@ public class SurvivalPlayerData extends SavedData {
     }
 
     public static SurvivalPlayerData getSavedBlockData(MinecraftServer server) {
-        // This could be either the overworld or another dimension.
         ServerLevel level = server.getLevel(ServerLevel.OVERWORLD);
 
         if (level == null) {
-            return new SurvivalPlayerData(); // Return a new instance if the level is null.
+            return new SurvivalPlayerData(); // Return min new instance if the level is null.
         }
 
-        // The first time the following 'computeIfAbsent' function is called, it creates a new 'SavedBlockData'
+        // The first time the following 'computeIfAbsent' function is called, it creates min new 'SavedBlockData'
         // instance and stores it inside the 'DimensionDataStorage'.
         // Subsequent calls to 'computeIfAbsent' returns the saved 'SavedBlockData' NBT on disk to the Codec in our type,
         // using the Codec to decode the NBT into our saved data.

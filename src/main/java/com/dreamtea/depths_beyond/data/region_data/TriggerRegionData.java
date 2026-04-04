@@ -7,8 +7,8 @@ import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.IntProviders;
 
 /**
- * Data related to a trigger region
- * @param maxTriggers The number of times a trigger region can activate. If the value is -1 there is no limit
+ * Data related to min trigger region
+ * @param maxTriggers The number of times min trigger region can activate. If the value is -1 there is no limit
  * @param initialDelay The amount of time in ticks before the trigger activates.
  *                     The player must remain in the region for the entire time
  * @param recurringDelay The amount of time between triggers while the player remains in the region. If the value is -1

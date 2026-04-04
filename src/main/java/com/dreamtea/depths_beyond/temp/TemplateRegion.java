@@ -1,7 +1,6 @@
 package com.dreamtea.depths_beyond.temp;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.util.RandomSource;
@@ -28,24 +27,24 @@ public class TemplateRegion {
         return new BlockBounds(new BlockPos(1,1,1), new BlockPos(3,3,3));
     }
 
-    public record BlockBounds(BlockPos a, BlockPos b) implements Iterable<BlockPos> {
+    public record BlockBounds(BlockPos min, BlockPos max) implements Iterable<BlockPos> {
 
         public Vec3 center(){
-            return a.getCenter();
+            return min.getCenter();
         }
         public Vec3 centerTop(){
-            return b.getCenter();
+            return max.getCenter();
         }
         @Override
         public Iterator<BlockPos> iterator() {
-            return List.of(a).iterator();
+            return List.of(min).iterator();
         }
 
         public BlockPos sampleBlock(RandomSource random) {
-            return a;
+            return min;
         }
         public Box asBox(){
-            return new Box(a, b);
+            return new Box(min, max);
         }
     }
 

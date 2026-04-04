@@ -1,6 +1,5 @@
 package com.dreamtea.depths_beyond.commands;
 
-import com.dreamtea.depths_beyond.imixin.ITrackGameRuns;
 import com.dreamtea.depths_beyond.items.DungeonLoot;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -42,7 +41,7 @@ public class DungeonLootCommands {
             DungeonLoot.setDungeonLootLabel(ie.getItem(), true);
             return 1;
         }
-        LOGGER.warn("label loot must be executed either by a player with an item in their main hand or by an itemStack directly");
+        LOGGER.warn("label loot must be executed either by min player with an item in their main hand or by an itemStack directly");
         return 0;
     }
     private static int executeMakeTool(CommandContext<CommandSourceStack> context) {
@@ -59,7 +58,7 @@ public class DungeonLootCommands {
             DungeonLoot.setDungeonToolLabel(ie.getItem(), true);
             return 1;
         }
-        LOGGER.warn("label tool must be executed either by a player with an item in their main hand or by an itemStack directly");
+        LOGGER.warn("label tool must be executed either by min player with an item in their main hand or by an itemStack directly");
         return 0;
     }
     private static int executeGiveUses(CommandContext<CommandSourceStack> context, int uses) {
@@ -76,7 +75,7 @@ public class DungeonLootCommands {
             DungeonLoot.giveFiniteUses(ie.getItem(), uses);
             return 1;
         }
-        LOGGER.warn("label uses must be executed either by a player with an item in their main hand or by an itemStack directly");
+        LOGGER.warn("label uses must be executed either by min player with an item in their main hand or by an itemStack directly");
         return 0;
     }
 }

@@ -1,8 +1,6 @@
 package com.dreamtea.depths_beyond;
 
 import com.dreamtea.depths_beyond.commands.CommandRegistration;
-import com.dreamtea.depths_beyond.config.DepthsBeyondConfig;
-import com.dreamtea.depths_beyond.dimension.DepthsBeyondGame;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.resources.Identifier;
 import org.apache.logging.log4j.LogManager;
