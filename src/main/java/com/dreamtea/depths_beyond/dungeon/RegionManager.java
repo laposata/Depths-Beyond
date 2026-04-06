@@ -5,6 +5,7 @@ import com.dreamtea.depths_beyond.dungeon.regions.Region;
 import com.dreamtea.depths_beyond.dungeon.regions.RegionType;
 import com.dreamtea.depths_beyond.stats.GameStats;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -40,5 +41,24 @@ public class RegionManager {
             case 24 -> tickAllRegionOfType(RegionType.LOOT, stats);
             case 5, 15, 25, 35 -> tickAllRegionOfType(RegionType.TRIGGER, stats);
         }
+    }
+
+    public List<Region> get(RegionType type){
+        return allRegions.get(type);
+    }
+    public Region getRegion(RegionType type, String name){
+        return allRegions.get(type).stream().filter(r -> (r.getRegionName().equals(name))).findFirst().orElse(null);
+    }
+
+    public List<Region> getRegionsByAny(RegionType type, String name){
+        return allRegions.get(type).stream().filter(r -> (r.getGroupName().equals(name) || r.getRegionName().equals(name))).toList();
+    }
+
+    public List<Region> getRegionsByGroup(RegionType type, String name){
+        return allRegions.get(type).stream().filter(r -> (r.getGroupName().equals(name))).toList();
+    }
+
+    public List<Region> getRegionsByGroup(String name){
+        return allRegions.values().stream().flatMap(Collection::stream).filter(r -> (r.getGroupName().equals(name))).toList();
     }
 }

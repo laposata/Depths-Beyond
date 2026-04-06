@@ -1,20 +1,21 @@
 package com.dreamtea.depths_beyond.dimension;
 
+import com.dreamtea.depths_beyond.cards.CardRegistry;
 import com.dreamtea.depths_beyond.config.DepthsBeyondConfig;
 import com.dreamtea.depths_beyond.dungeon.DungeonRun;
+import com.dreamtea.depths_beyond.dungeon.RegionManager;
 import com.dreamtea.depths_beyond.dungeon.regions.GateRegion;
 import com.dreamtea.depths_beyond.dungeon.regions.LootRegion;
 import com.dreamtea.depths_beyond.dungeon.regions.Region;
 import com.dreamtea.depths_beyond.dungeon.regions.RegionType;
 import com.dreamtea.depths_beyond.imixin.IPlayDepthsBelow;
+import com.dreamtea.depths_beyond.stats.GameStats;
 import com.dreamtea.depths_beyond.temp.GameSpace;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static com.dreamtea.depths_beyond.utils.RegionUtils.getRegionsByAny;
 
 //import xyz.nucleoid.fantasy.RuntimeWorldConfig;
 //import xyz.nucleoid.map_templates.MapTemplate;
@@ -36,17 +37,23 @@ public class DepthsBeyondGame {
     private final GameSpace gameSpace;
     private final ServerLevel world;
     private final Map<UUID, DungeonRun> playerStates;
-    private final Map<RegionType, List<Region>> regions;
+    private final RegionManager regions;
+    private int gameTime = 0;
+    private CardRegistry cardRegistry;
 
-    public DepthsBeyondGame(DepthsBeyondConfig config, GameSpace gameSpace,Map<RegionType, List<Region>> regions, ServerLevel world) {
+    public DepthsBeyondGame(DepthsBeyondConfig config, GameSpace gameSpace, List<Region> regions, ServerLevel world) {
         this.config = config;
         this.gameSpace = gameSpace;
         this.world = world;
         playerStates = new HashMap<>();
-        this.regions = regions;
-
+        this.regions = new RegionManager(regions);
     }
-
+    public CardRegistry getCardRegistry(){
+        return cardRegistry;
+    }
+    public int getGameTime(){
+        return gameTime;
+    }
 //    public static GameOpenProcedure open(GameOpenContext<DepthsBeyondConfig> context) {
 //        DepthsBeyondConfig config = context.config();
 //        MapTemplate template;
@@ -75,9 +82,6 @@ public class DepthsBeyondGame {
 //        });
 //    }
 
-    private Region start(){
-        return regions.get(RegionType.START).getFirst();
-    }
     private void onPlayerLeave(ServerPlayer player) {
         DungeonRun playerPreGameState = playerStates.get(player.getUUID());
         playerPreGameState.resetPlayerState(player);
@@ -159,12 +163,17 @@ public class DepthsBeyondGame {
     }
 
     public int openGates(String name){
-        return getRegionsByAny(regions, RegionType.GATE, name).stream().peek(r -> ((GateRegion)r).openGate()).collect(Collectors.toSet()).size();
+        return regions.getRegionsByAny(RegionType.GATE, name).stream().peek(r -> ((GateRegion)r).openGate()).collect(Collectors.toSet()).size();
     }
     public int closeGate(String name){
-        return getRegionsByAny(regions, RegionType.GATE, name).stream().peek(r -> ((GateRegion)r).closeGate()).collect(Collectors.toSet()).size();
+        return regions.getRegionsByAny(RegionType.GATE, name).stream().peek(r -> ((GateRegion)r).closeGate()).collect(Collectors.toSet()).size();
     }
+
     public List<DungeonRun> getPlayers(Collection<UUID> players){
         return players.stream().map(this.playerStates::get).toList();
+    }
+
+    public Collection<DungeonRun> getAllPlayers(){
+        return this.playerStates.values();
     }
 }

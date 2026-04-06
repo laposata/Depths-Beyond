@@ -78,7 +78,9 @@ public class GameStats {
     private float calcPercentModifier(float skill){
         return (100f + skill)/(100f);
     }
-
+    public float getFocusModifier(){
+        return 1.0f /calcPercentModifier(focus);
+    }
     public float getLuckModifier(){
         return calcPercentModifier(luck);
     }
