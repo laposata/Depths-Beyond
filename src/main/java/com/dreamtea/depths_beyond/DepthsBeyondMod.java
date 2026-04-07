@@ -5,6 +5,8 @@ import net.fabricmc.api.ModInitializer;
 import net.minecraft.resources.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import static com.dreamtea.depths_beyond.effects.types.DungeonIntegerProvider.initIntProviders;
 //import xyz.nucleoid.plasmid.api.game.GameTypes;
 
 public class DepthsBeyondMod implements ModInitializer {
@@ -14,6 +16,7 @@ public class DepthsBeyondMod implements ModInitializer {
     }
     @Override
     public void onInitialize() {
+        initIntProviders();
 //        GameTypes.register(
 //                ofDB("dungeon"),
 //                DepthsBeyondConfig.CODEC,

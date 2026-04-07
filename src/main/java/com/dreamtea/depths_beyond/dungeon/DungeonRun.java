@@ -35,7 +35,7 @@ public class DungeonRun {
 
     public void executeCard(DepthsBeyondGame game){
         Card card = deck.pullNextCard();
-        castTime = (int)(card.castTime() * stats.getFocusModifier());
+        castTime = (int)(card.castTime() * 20 * stats.getFocusModifier());
         card.executable().cast(this, game);
     }
 

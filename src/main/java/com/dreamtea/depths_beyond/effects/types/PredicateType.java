@@ -37,7 +37,8 @@ public record PredicateType<T extends CardPredicate>(MapCodec<T> codec, String d
             CardPredicate.StatusEffect.CODEC, CardPredicate.StatusEffect.DESCRIPTION));
     public static final PredicateType<CardPredicate.Card> CARD = register("card", new PredicateType<>(
             CardPredicate.Card.CODEC, CardPredicate.Card.DESCRIPTION));
-
+    public static final PredicateType<CardPredicate.InventoryContains> INVENTORY_CONTAINS = register("inventory", new PredicateType<>(
+            CardPredicate.InventoryContains.CODEC, CardPredicate.InventoryContains.DESCRIPTION));
     public static <T extends CardPredicate> PredicateType<T> register(String id, PredicateType<T> beanType) {
         return Registry.register(PredicateType.REGISTRY, ofDB(id), beanType);
     }

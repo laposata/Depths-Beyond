@@ -11,7 +11,7 @@ public class CardRegistry {
         cards.forEach(c -> this.cards.put(c.id(), c));
     }
 
-    public Card getCard(String id){
+    public Card getCard(Identifier id){
         return cards.get(id);
     }
     public Collection<Card> getAllCards(){

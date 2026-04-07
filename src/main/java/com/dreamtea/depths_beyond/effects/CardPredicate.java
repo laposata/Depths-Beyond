@@ -1,10 +1,10 @@
 package com.dreamtea.depths_beyond.effects;
 
-import com.dreamtea.depths_beyond.effects.types.ExecutableType;
-import com.dreamtea.depths_beyond.effects.types.FloatComparison;
-import com.dreamtea.depths_beyond.effects.types.PredicateType;
 import com.dreamtea.depths_beyond.dungeon.DepthsBeyondGame;
 import com.dreamtea.depths_beyond.dungeon.DungeonRun;
+import com.dreamtea.depths_beyond.effects.types.DungeonIntegerProvider;
+import com.dreamtea.depths_beyond.effects.types.FloatComparison;
+import com.dreamtea.depths_beyond.effects.types.PredicateType;
 import com.dreamtea.depths_beyond.stats.StatType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -12,6 +12,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.valueproviders.*;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.Arrays;
 import java.util.List;
@@ -168,6 +169,7 @@ public interface CardPredicate {
                 """;
         @Override
         public boolean check(DungeonRun executingPlayer, DepthsBeyondGame game) {
+            DungeonIntegerProvider.setContext(value, executingPlayer, game);
             if(global){
                 return game.getAllPlayers().stream().allMatch(p -> comparison.test(p.getStat(stat), value.sample(p.getRandom())));
             }
@@ -192,7 +194,10 @@ public interface CardPredicate {
 
         @Override
         public boolean check(DungeonRun executingPlayer, DepthsBeyondGame game) {
-            return comparison.test(game.getGameTime(), value.sample(executingPlayer.getRandom()));
+
+            return comparison.test(
+                    game.getGameTime(),
+                    DungeonIntegerProvider.sample(value, executingPlayer.getRandom(), executingPlayer, game));
         }
 
         @Override
@@ -236,7 +241,9 @@ public interface CardPredicate {
 
         @Override
         public boolean check(DungeonRun executingPlayer, DepthsBeyondGame game) {
-            return comparison.test(game.getAllPlayers().size(), number.sample(executingPlayer.getRandom()));
+            return comparison.test(
+                    game.getAllPlayers().size(),
+                    DungeonIntegerProvider.sample(number, executingPlayer.getRandom(), executingPlayer, game));
         }
 
         @Override
@@ -245,17 +252,18 @@ public interface CardPredicate {
         }
     }
 
-    record Random(FloatProvider number) implements CardPredicate{
+    record Random(IntProvider number) implements CardPredicate{
         public static final MapCodec<Random> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                FloatProviders.CODEC.fieldOf("number").forGetter(Random::number)
+                IntProviders.CODEC.fieldOf("number").forGetter(Random::number)
         ).apply(instance, Random::new));
         public static String DESCRIPTION = """
-                Randomly generates a value between 0 and 1, if that value is less than 'number' outputs true.
+                Randomly generates a value between 0 and 100, if that value is less than 'number' outputs true.
                 """;
 
         @Override
         public boolean check(DungeonRun executingPlayer, DepthsBeyondGame game) {
-            return executingPlayer.getRandom().nextFloat() <= number.sample(executingPlayer.getRandom());
+            return executingPlayer.getRandom().nextIntBetweenInclusive(0, 100)
+                    <= DungeonIntegerProvider.sample(number, executingPlayer.getRandom(), executingPlayer, game);
         }
 
         @Override
@@ -301,13 +309,59 @@ public interface CardPredicate {
                     .getAllCards()
                     .stream()
                     .filter(c -> card.filter(c, executingPlayer, game)).count(),
-                    count.sample(executingPlayer.getRandom())
+                    DungeonIntegerProvider.sample(count, executingPlayer.getRandom(), executingPlayer, game)
             );
         }
 
         @Override
         public PredicateType<?> getType() {
             return PredicateType.CARD;
+        }
+    }
+
+    record InventoryContains(ItemStack item, FloatComparison compare, boolean global, boolean compareNbt) implements CardPredicate {
+        public static MapCodec<InventoryContains> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                ItemStack.CODEC.fieldOf("item").forGetter(InventoryContains::item),
+                FloatComparison.CODEC.fieldOf("compare").orElse(FloatComparison.GREATER_THEN_EQUAL).forGetter(InventoryContains::compare),
+                Codec.BOOL.fieldOf("global").orElse(false).forGetter(InventoryContains::global),
+                Codec.BOOL.fieldOf("compareNbt").orElse(true).forGetter(InventoryContains::global)
+        ).apply(instance, InventoryContains::new));
+        public static String DESCRIPTION = """
+                Searches through the inventory of the player for 'item'. If 'compareNbt' the items must match exactly.
+                If 'global' checks all players inventories.
+                Then checks if that sum total is 'compare' to the count of 'item'
+                """;
+        @Override
+        public boolean check(DungeonRun executingPlayer, DepthsBeyondGame game) {
+            if(global){
+                int count = game.getAllPlayers()
+                        .stream()
+                        .flatMap(p ->
+                            p.getPlayer().getInventory().getNonEquipmentItems().stream()
+                        ).filter(i -> compareNbt ?
+                                ItemStack.isSameItemSameComponents(item, i):
+                                ItemStack.isSameItem(item, i))
+                        .map(ItemStack::count)
+                        .reduce(Integer::sum)
+                        .orElse(0);
+                return compare.test(count, item.count());
+            }
+            int count = executingPlayer.getPlayer()
+                    .getInventory()
+                    .getNonEquipmentItems()
+                    .stream()
+                    .filter(i -> compareNbt ?
+                            ItemStack.isSameItemSameComponents(item, i):
+                            ItemStack.isSameItem(item, i))
+                    .map(ItemStack::count)
+                    .reduce(Integer::sum)
+                    .orElse(0);
+            return compare.test(count, item.count());
+        }
+
+        @Override
+        public PredicateType<?> getType() {
+            return PredicateType.INVENTORY_CONTAINS;
         }
     }
 }

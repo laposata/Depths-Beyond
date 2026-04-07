@@ -21,9 +21,15 @@ public class ItemUtils {
         return customData;
     }
 
+    public static ItemStack withCount(ItemStack item, int count){
+        item.setCount(count);
+        return item;
+    }
+
     public static Tag getCustomValue(ItemStack item, String label){
         return getCustomData(item).get(label);
     }
+
     public static void addCustomData(ItemStack item, String label, Tag value){
         CompoundTag data = getCustomData(item);
         data.put(label, value);
