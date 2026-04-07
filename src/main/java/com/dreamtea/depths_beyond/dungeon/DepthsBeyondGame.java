@@ -1,15 +1,13 @@
-package com.dreamtea.depths_beyond.dimension;
+package com.dreamtea.depths_beyond.dungeon;
 
 import com.dreamtea.depths_beyond.cards.CardRegistry;
 import com.dreamtea.depths_beyond.config.DepthsBeyondConfig;
-import com.dreamtea.depths_beyond.dungeon.DungeonRun;
-import com.dreamtea.depths_beyond.dungeon.RegionManager;
-import com.dreamtea.depths_beyond.dungeon.regions.GateRegion;
-import com.dreamtea.depths_beyond.dungeon.regions.LootRegion;
-import com.dreamtea.depths_beyond.dungeon.regions.Region;
-import com.dreamtea.depths_beyond.dungeon.regions.RegionType;
+import com.dreamtea.depths_beyond.dimension.RegionManager;
+import com.dreamtea.depths_beyond.dimension.regions.GateRegion;
+import com.dreamtea.depths_beyond.dimension.regions.LootRegion;
+import com.dreamtea.depths_beyond.dimension.regions.Region;
+import com.dreamtea.depths_beyond.dimension.regions.RegionType;
 import com.dreamtea.depths_beyond.imixin.IPlayDepthsBelow;
-import com.dreamtea.depths_beyond.stats.GameStats;
 import com.dreamtea.depths_beyond.temp.GameSpace;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;

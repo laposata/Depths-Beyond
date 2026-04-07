@@ -1,6 +1,6 @@
 package com.dreamtea.depths_beyond.mixin;
 
-import com.dreamtea.depths_beyond.dimension.DepthsBeyondGame;
+import com.dreamtea.depths_beyond.dungeon.DepthsBeyondGame;
 import com.dreamtea.depths_beyond.imixin.ITrackGameRuns;
 import net.minecraft.server.level.ServerLevel;
 import org.spongepowered.asm.mixin.Mixin;

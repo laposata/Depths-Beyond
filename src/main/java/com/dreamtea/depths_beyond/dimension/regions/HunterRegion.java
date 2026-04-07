@@ -1,4 +1,4 @@
-package com.dreamtea.depths_beyond.dungeon.regions;
+package com.dreamtea.depths_beyond.dimension.regions;
 
 import com.dreamtea.depths_beyond.config.DepthsBeyondConfig;
 import com.dreamtea.depths_beyond.data.region_data.HunterRegionData;

@@ -1,16 +1,11 @@
 package com.dreamtea.depths_beyond.utils;
 
-import com.dreamtea.depths_beyond.dungeon.regions.Region;
-import com.dreamtea.depths_beyond.dungeon.regions.RegionType;
+import com.dreamtea.depths_beyond.dimension.regions.Region;
 import com.dreamtea.depths_beyond.temp.TemplateRegion;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.NbtOps;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 //import xyz.nucleoid.map_templates.TemplateRegion;
 
 public class RegionUtils {

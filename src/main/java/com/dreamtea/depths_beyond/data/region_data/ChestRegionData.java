@@ -7,7 +7,7 @@ import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.IntProviders;
 
-import static com.dreamtea.depths_beyond.dungeon.regions.ChestRegion.ChestGroupBehavior;
+import static com.dreamtea.depths_beyond.dimension.regions.ChestRegion.ChestGroupBehavior;
 
 /***
  * A Chest Region allows for loot to be dropped into inventories rather than on the ground. The containers will be assigned

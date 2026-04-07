@@ -1,6 +1,6 @@
-package com.dreamtea.depths_beyond.dungeon;
+package com.dreamtea.depths_beyond.effects;
 
-import com.dreamtea.depths_beyond.cards.types.OnGoingTrigger;
+import com.dreamtea.depths_beyond.effects.types.OnGoingTrigger;
 
 import java.util.*;
 

@@ -1,8 +1,8 @@
-package com.dreamtea.depths_beyond.dungeon;
+package com.dreamtea.depths_beyond.dimension;
 
-import com.dreamtea.depths_beyond.dungeon.regions.ChestRegion;
-import com.dreamtea.depths_beyond.dungeon.regions.Region;
-import com.dreamtea.depths_beyond.dungeon.regions.RegionType;
+import com.dreamtea.depths_beyond.dimension.regions.ChestRegion;
+import com.dreamtea.depths_beyond.dimension.regions.Region;
+import com.dreamtea.depths_beyond.dimension.regions.RegionType;
 import com.dreamtea.depths_beyond.stats.GameStats;
 
 import java.util.Collection;

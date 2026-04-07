@@ -1,9 +1,9 @@
 package com.dreamtea.depths_beyond.dungeon;
 
-import com.dreamtea.depths_beyond.cards.types.CardPlacement;
+import com.dreamtea.depths_beyond.cards.DeckManager;
+import com.dreamtea.depths_beyond.effects.types.CardPlacement;
 import com.dreamtea.depths_beyond.data.PlayerPreGameState;
 import com.dreamtea.depths_beyond.cards.Card;
-import com.dreamtea.depths_beyond.dimension.DepthsBeyondGame;
 import com.dreamtea.depths_beyond.stats.DropType;
 import com.dreamtea.depths_beyond.stats.GameStats;
 import com.dreamtea.depths_beyond.stats.StatType;
@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 
 import java.util.List;
+import java.util.UUID;
 
 public class DungeonRun {
     private final PlayerPreGameState initState;
@@ -18,30 +19,28 @@ public class DungeonRun {
     private boolean foundGoal;
     private boolean started;
     private ServerPlayer player;
-    private List<Card> deck;
+    private final DeckManager deck;
     private int castTime = 0;
-    private List<Card> consumedCards;
 
     public DungeonRun(ServerPlayer player){
         initState = new PlayerPreGameState(player);
         this.player = player;
         this.stats = new GameStats(player);
+        this.deck = new DeckManager(List.of(), player.getRandom());
     }
 
     public void insertCard(Card card, CardPlacement placement){
-        switch (placement){
-            case NEXT -> deck.addFirst(card);
-            case LAST -> deck.add(card);
-            case RANDOM -> deck.add(player.getRandom().nextIntBetweenInclusive(0, deck.size()), card);
-        }
+        deck.insertCard(card, placement);
     }
+
     public void executeCard(DepthsBeyondGame game){
-        Card card = deck.removeFirst();
+        Card card = deck.pullNextCard();
         castTime = (int)(card.castTime() * stats.getFocusModifier());
-        if(card.fleeting()){
-            consumedCards.add(card);
-        }
         card.executable().cast(this, game);
+    }
+
+    public DeckManager getDeck(){
+        return deck;
     }
     public boolean hasStartedRun(){
         return started;

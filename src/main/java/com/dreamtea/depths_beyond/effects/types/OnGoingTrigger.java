@@ -1,4 +1,4 @@
-package com.dreamtea.depths_beyond.cards.types;
+package com.dreamtea.depths_beyond.effects.types;
 
 import net.minecraft.util.StringRepresentable;
 

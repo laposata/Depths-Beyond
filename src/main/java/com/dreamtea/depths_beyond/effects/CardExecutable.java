@@ -1,9 +1,10 @@
-package com.dreamtea.depths_beyond.cards;
+package com.dreamtea.depths_beyond.effects;
 
-import com.dreamtea.depths_beyond.cards.types.CardPlacement;
-import com.dreamtea.depths_beyond.cards.types.ExecutableType;
-import com.dreamtea.depths_beyond.dimension.DepthsBeyondGame;
+import com.dreamtea.depths_beyond.cards.Card;
+import com.dreamtea.depths_beyond.dungeon.DepthsBeyondGame;
 import com.dreamtea.depths_beyond.dungeon.DungeonRun;
+import com.dreamtea.depths_beyond.effects.types.CardPlacement;
+import com.dreamtea.depths_beyond.effects.types.ExecutableType;
 import com.dreamtea.depths_beyond.stats.StatType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -16,6 +17,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public interface CardExecutable {
@@ -24,13 +26,14 @@ public interface CardExecutable {
     Codec<ExecutableType<?>> executableTypeCodec = ExecutableType.REGISTRY.byNameCodec();
     Codec<CardExecutable> EXECUTABLE_CODEC = executableTypeCodec.dispatch("type", CardExecutable::getType, ExecutableType::codec);
 
-
-    record ExecuteIf(CardPredicate predicate, CardExecutable executable, CardExecutable otherwise) implements CardExecutable{
+    record ExecuteIf(CardPredicate predicate, CardExecutable executable, CardExecutable otherwise) implements CardExecutable {
         public static final MapCodec<ExecuteIf> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 CardPredicate.PREDICATE_CODEC.fieldOf("if").forGetter(ExecuteIf::predicate),
                 CardExecutable.EXECUTABLE_CODEC.fieldOf("then").forGetter(ExecuteIf::executable),
                 CardExecutable.EXECUTABLE_CODEC.fieldOf("else").orElse(null).forGetter(ExecuteIf::otherwise)
         ).apply(instance, ExecuteIf::new));
+        public static final String DESCRIPTION =
+                "If 'predicate' is true, execute 'executable', if 'predicate' is false execute 'otherwise' (if present).";
         @Override
         public void cast(DungeonRun executingPlayer, DepthsBeyondGame game) {
             if(predicate.check(executingPlayer, game)){
@@ -39,9 +42,48 @@ public interface CardExecutable {
                 otherwise.cast(executingPlayer, game);
             }
         }
+
         @Override
         public ExecutableType<?> getType() {
             return ExecutableType.IF;
+        }
+    }
+
+    record ExecuteAs(CardPredicate predicate, CardExecutable execute, boolean random, boolean excludeSelf) implements CardExecutable{
+        public static final MapCodec<ExecuteAs> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                CardPredicate.PREDICATE_CODEC.fieldOf("predicate").orElse(null).forGetter(ExecuteAs::predicate),
+                CardExecutable.EXECUTABLE_CODEC.fieldOf("execute").forGetter(ExecuteAs::execute),
+                Codec.BOOL.fieldOf("random").orElse(false).forGetter(ExecuteAs::random),
+                Codec.BOOL.fieldOf("excludeSelf").orElse(false).forGetter(ExecuteAs::excludeSelf)
+        ).apply(instance, ExecuteAs::new));
+        public static final String DESCRIPTION = """
+                Executes 'execute' as if played by all players that pass 'predicate'.
+                If 'predicate' is null, executes for all players
+                If 'excludeSelf', the effect will not be executed by the initial player, even if 'predicate' is null.
+                If 'random', the effect will trigger for 1 random player that meets 'predicate'.
+                """;
+        @Override
+        public void cast(DungeonRun executingPlayer, DepthsBeyondGame game) {
+            var players = game.getAllPlayers().stream().filter(player -> {
+                if(excludeSelf
+                        && player.getPlayer().getStringUUID().equals(executingPlayer.getPlayer().getStringUUID())){
+                    return false;
+                }
+                if(predicate == null) return true;
+                return predicate.check(player, game);
+            }).toList();
+            if(players.isEmpty()) return;
+            if(random){
+                var randPlayer = players.get(executingPlayer.getRandom().nextIntBetweenInclusive(0, players.size() - 1));
+                execute.cast(randPlayer, game);
+            } else {
+                players.forEach(p -> cast(p, game));
+            }
+        }
+
+        @Override
+        public ExecutableType<?> getType() {
+            return ExecutableType.EXECUTE_AS;
         }
     }
 
@@ -49,6 +91,7 @@ public interface CardExecutable {
         public static final MapCodec<All> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 CardExecutable.EXECUTABLE_CODEC.listOf().fieldOf("effects").forGetter(c -> List.of(c.effects))
         ).apply(instance, All::new));
+        public static final String DESCRIPTION = "Executes all effects in order";
 
         public All(List<CardExecutable> cardExecutables) {
             this(cardExecutables.toArray(new CardExecutable[0]));
@@ -60,26 +103,39 @@ public interface CardExecutable {
                 effect.cast(executingPlayer, game);
             }
         }
+
         @Override
         public ExecutableType<?> getType() {
             return ExecutableType.ALL;
         }
     }
 
-    record Random(CardExecutable ... effects) implements CardExecutable{
+    record Random(IntProvider count, CardExecutable ... effects) implements CardExecutable{
         public static final MapCodec<Random> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                IntProviders.CODEC.fieldOf("count").forGetter(Random::count),
                 CardExecutable.EXECUTABLE_CODEC.listOf().fieldOf("effects").forGetter(c -> List.of(c.effects))
         ).apply(instance, Random::new));
-
-        public Random(List<CardExecutable> cardExecutables) {
-            this(cardExecutables.toArray(new CardExecutable[0]));
+        public static final String DESCRIPTION = """
+                Executes effects from 'effects' a number of times equal to 'count'. Effects cannot trigger twice.
+                - If 'count' == 0, nothing happens
+                - If 'count' is greater than or equal to effects.length, every effect is activated in a random order.
+                """;
+        public Random(IntProvider c, List<CardExecutable> cardExecutables) {
+            this(c, cardExecutables.toArray(new CardExecutable[0]));
         }
 
         @Override
         public void cast(DungeonRun executingPlayer, DepthsBeyondGame game) {
-            var i = executingPlayer.getRandom().nextIntBetweenInclusive(0, effects.length - 1);
-            effects[i].cast(executingPlayer, game);
+            int num = count.sample(executingPlayer.getRandom());
+            if(num == 0) return;
+            List<CardExecutable> remainingEffects = new ArrayList<>(List.of(effects));
+            for(int i = 0; i < num && !remainingEffects.isEmpty(); i ++){
+                var n = executingPlayer.getRandom().nextIntBetweenInclusive(0, remainingEffects.size() - 1);
+                remainingEffects.remove(n).cast(executingPlayer, game);
+            }
+
         }
+
         @Override
         public ExecutableType<?> getType() {
             return ExecutableType.RANDOM;
@@ -92,7 +148,10 @@ public interface CardExecutable {
                 IntProviders.CODEC.fieldOf("amount").forGetter(AddStat::amount),
                 Codec.BOOL.fieldOf("global").orElse(false).forGetter(AddStat::global)
             ).apply(instance, AddStat::new));
-
+        public static final String DESCRIPTION = """
+                Increases stat of 'type' by 'amount', or decreases it if 'amount' is negative.
+                If 'global' this will apply to all players.
+                """;
         @Override
         public void cast(DungeonRun executingPlayer, DepthsBeyondGame game) {
            if(global){
@@ -101,6 +160,7 @@ public interface CardExecutable {
                executingPlayer.addStat(type, amount.sample(executingPlayer.getRandom()));
            }
         }
+
         @Override
         public ExecutableType<?> getType() {
             return ExecutableType.ADD_STAT;
@@ -114,6 +174,11 @@ public interface CardExecutable {
                 Codec.BOOL.fieldOf("global").orElse(false).forGetter(SetStat::global)
         ).apply(instance, SetStat::new));
 
+        public static final String DESCRIPTION = """
+                Sets stat of 'type' to 'amount'.
+                If 'global' this will apply to all players.
+                Stat values will be clamped if they are set outside of allowed range.
+                """;
         @Override
         public void cast(DungeonRun executingPlayer, DepthsBeyondGame game) {
             if(global){
@@ -122,6 +187,7 @@ public interface CardExecutable {
                 executingPlayer.setStat(type, amount.sample(executingPlayer.getRandom()));
             }
         }
+
         @Override
         public ExecutableType<?> getType() {
             return ExecutableType.SET_STAT;
@@ -133,7 +199,10 @@ public interface CardExecutable {
                 MobEffectInstance.CODEC.fieldOf("effect").forGetter(GiveEffect::effect),
                 Codec.BOOL.fieldOf("global").orElse(false).forGetter(GiveEffect::global)
         ).apply(instance, GiveEffect::new));
-
+        public static final String DESCRIPTION = """
+                Apply 'effect' to the player.
+                If 'global' this applies to all players.
+                """;
         @Override
         public void cast(DungeonRun executingPlayer, DepthsBeyondGame game) {
             if(global){
@@ -142,6 +211,7 @@ public interface CardExecutable {
                 executingPlayer.getPlayer().addEffect(effect);
             }
         }
+
         @Override
         public ExecutableType<?> getType() {
             return ExecutableType.GIVE_EFFECT;
@@ -154,6 +224,12 @@ public interface CardExecutable {
                 CardPlacement.CODEC.fieldOf("placement").orElse(CardPlacement.RANDOM).forGetter(AddCard::placement),
                 IntProviders.CODEC.fieldOf("quantity").orElse(ConstantInt.of(1)).forGetter(AddCard::quantity)
         ).apply(instance, AddCard::new));
+
+        public static final String DESCRIPTION = """
+                Adds copies of 'cardId' to the players deck at location specified by 'placement'.
+                This repeats 'quantity' times
+                """;
+
         @Override
         public void cast(DungeonRun executingPlayer, DepthsBeyondGame game) {
             Card card = game.getCardRegistry().getCard(cardId);
@@ -174,6 +250,13 @@ public interface CardExecutable {
                 IntProviders.CODEC.fieldOf("health").forGetter(PlayerHealth::health),
                 Codec.BOOL.fieldOf("global").orElse(false).forGetter(PlayerHealth::global)
         ).apply(instance, PlayerHealth::new));
+
+        public static final String DESCRIPTION = """
+                If 'health' is positive, heal the player that amount.
+                If 'health' is negative, damage the player that amount.
+                If global, do this to all players.
+                """;
+
         @Override
         public void cast(DungeonRun executingPlayer, DepthsBeyondGame game) {
             int value = health.sample(executingPlayer.getRandom());
@@ -194,6 +277,10 @@ public interface CardExecutable {
         public static final MapCodec<GiveItem> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 ItemStack.CODEC.fieldOf("item").forGetter(GiveItem::item)
         ).apply(instance, GiveItem::new));
+
+        public static final String DESCRIPTION = """
+                    Summon a copy of 'item' directly on the player
+                    """;
         @Override
         public void cast(DungeonRun executingPlayer, DepthsBeyondGame game) {
             Vec3 pos = executingPlayer.getPlayer().position();

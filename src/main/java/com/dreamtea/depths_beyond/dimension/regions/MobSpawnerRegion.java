@@ -1,9 +1,9 @@
-package com.dreamtea.depths_beyond.dungeon.regions;
+package com.dreamtea.depths_beyond.dimension.regions;
 
 import com.dreamtea.depths_beyond.config.DepthsBeyondConfig;
 import com.dreamtea.depths_beyond.data.MobSpawnerData;
 import com.dreamtea.depths_beyond.data.region_data.MobRegionData;
-import com.dreamtea.depths_beyond.dungeon.RegionManager;
+import com.dreamtea.depths_beyond.dimension.RegionManager;
 import com.dreamtea.depths_beyond.stats.GameStats;
 import com.dreamtea.depths_beyond.temp.TemplateRegion;
 import com.dreamtea.depths_beyond.utils.RegionUtils;

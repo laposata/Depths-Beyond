@@ -1,8 +1,8 @@
-package com.dreamtea.depths_beyond.dungeon;
+package com.dreamtea.depths_beyond.effects;
 
-import com.dreamtea.depths_beyond.cards.CardExecutable;
-import com.dreamtea.depths_beyond.cards.types.OnGoingTrigger;
-import com.dreamtea.depths_beyond.dimension.DepthsBeyondGame;
+import com.dreamtea.depths_beyond.effects.types.OnGoingTrigger;
+import com.dreamtea.depths_beyond.dungeon.DepthsBeyondGame;
+import com.dreamtea.depths_beyond.dungeon.DungeonRun;
 
 public record OnGoingEffect(String id, OnGoingTrigger trigger, CardExecutable onTrigger) {
     public void onTrigger(DungeonRun executingPlayer, DepthsBeyondGame game) {

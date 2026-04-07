@@ -1,6 +1,6 @@
 package com.dreamtea.depths_beyond.imixin;
 
-import com.dreamtea.depths_beyond.dimension.DepthsBeyondGame;
+import com.dreamtea.depths_beyond.dungeon.DepthsBeyondGame;
 
 public interface ITrackGameRuns {
     void setGame(DepthsBeyondGame game);

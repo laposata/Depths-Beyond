@@ -1,6 +1,5 @@
 package com.dreamtea.depths_beyond.stats;
 
-import com.dreamtea.depths_beyond.dungeon.regions.ChestRegion;
 import com.mojang.serialization.Codec;
 import net.minecraft.util.StringRepresentable;
 
