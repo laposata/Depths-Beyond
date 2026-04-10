@@ -17,16 +17,15 @@ import net.minecraft.util.valueproviders.IntProviders;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.dreamtea.depths_beyond.effects.EffectRegistries.FILTER_CODEC;
+
 public interface CardFilter {
     boolean filter(Card card, DungeonRun player, DepthsBeyondGame game);
     CardFilterType<?> getType();
 
-    Codec<CardFilterType<?>> predicateTypeCodec = CardFilterType.REGISTRY.byNameCodec();
-    Codec<CardFilter> FILTER_CODEC = predicateTypeCodec.dispatch("type", CardFilter::getType, CardFilterType::codec);
-
     record And(CardFilter ... filters) implements CardFilter{
         public static final MapCodec<And> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                CardFilter.FILTER_CODEC.listOf().fieldOf("effects").forGetter(c -> List.of(c.filters))
+                FILTER_CODEC.listOf().fieldOf("effects").forGetter(c -> List.of(c.filters))
         ).apply(instance, And::new));
         public static final String DESCRIPTION = "Checks card meets all of 'filters'. Stops checking once one is false";
         public And(List<CardFilter> filters){
@@ -51,7 +50,7 @@ public interface CardFilter {
 
     record Or(CardFilter ... filters) implements CardFilter{
         public static final MapCodec<Or> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                CardFilter.FILTER_CODEC.listOf().fieldOf("effects").forGetter(c -> List.of(c.filters))
+                FILTER_CODEC.listOf().fieldOf("effects").forGetter(c -> List.of(c.filters))
         ).apply(instance, Or::new));
         public static final String DESCRIPTION = "Checks card meets any of 'filters'. Stops checking once one is true";
         public Or(List<CardFilter> filters){
@@ -76,7 +75,7 @@ public interface CardFilter {
 
     record Not(CardFilter filter) implements CardFilter{
         public static final MapCodec<Not> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                CardFilter.FILTER_CODEC.fieldOf("effects").forGetter(Not::filter)
+                FILTER_CODEC.fieldOf("effects").forGetter(Not::filter)
         ).apply(instance, Not::new));
         public static final String DESCRIPTION = "Negates output of 'filter'";
 

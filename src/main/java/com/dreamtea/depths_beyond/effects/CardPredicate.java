@@ -17,16 +17,17 @@ import net.minecraft.world.item.ItemStack;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.dreamtea.depths_beyond.effects.EffectRegistries.FILTER_CODEC;
+import static com.dreamtea.depths_beyond.effects.EffectRegistries.PREDICATE_CODEC;
+
 public interface CardPredicate {
     boolean check(DungeonRun executingPlayer, DepthsBeyondGame game);
     PredicateType<?> getType();
-    Codec<PredicateType<?>> predicateTypeCodec = PredicateType.REGISTRY.byNameCodec();
-    Codec<CardPredicate> PREDICATE_CODEC = predicateTypeCodec.dispatch("type", CardPredicate::getType, PredicateType::codec);
-
+    
     record EachPass(CardPredicate playerPredicate, CardPredicate check, boolean excludeSelf) implements CardPredicate{
         public static final MapCodec<EachPass> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                CardPredicate.PREDICATE_CODEC.fieldOf("playerPredicate").orElse(null).forGetter(EachPass::playerPredicate),
-                CardPredicate.PREDICATE_CODEC.fieldOf("check").orElse(null).forGetter(EachPass::check),
+                PREDICATE_CODEC.optionalFieldOf("playerPredicate", null).forGetter(EachPass::playerPredicate),
+                PREDICATE_CODEC.optionalFieldOf("check", null).forGetter(EachPass::check),
                 Codec.BOOL.fieldOf("excludeSelf").orElse(false).forGetter(EachPass::excludeSelf)
         ).apply(instance, EachPass::new));
         public static final String DESCRIPTION = """
@@ -56,8 +57,8 @@ public interface CardPredicate {
 
     record AnyPass(CardPredicate playerPredicate, CardPredicate check, boolean excludeSelf) implements CardPredicate{
         public static final MapCodec<AnyPass> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                CardPredicate.PREDICATE_CODEC.fieldOf("playerPredicate").orElse(null).forGetter(AnyPass::playerPredicate),
-                CardPredicate.PREDICATE_CODEC.fieldOf("check").orElse(null).forGetter(AnyPass::check),
+                PREDICATE_CODEC.optionalFieldOf("playerPredicate", null).forGetter(AnyPass::playerPredicate),
+                PREDICATE_CODEC.optionalFieldOf("check", null).forGetter(AnyPass::check),
                 Codec.BOOL.fieldOf("excludeSelf").orElse(false).forGetter(AnyPass::excludeSelf)
         ).apply(instance, AnyPass::new));
         public static final String DESCRIPTION = """
@@ -294,7 +295,7 @@ public interface CardPredicate {
 
     record Card(CardFilter card, IntProvider count, FloatComparison compare) implements CardPredicate{
         public static final MapCodec<Card> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                CardFilter.FILTER_CODEC.fieldOf("card").forGetter(Card::card),
+                FILTER_CODEC.fieldOf("card").forGetter(Card::card),
                 IntProviders.CODEC.fieldOf("count").orElse(ConstantInt.of(1)).forGetter(Card::count),
                 FloatComparison.CODEC.fieldOf("compare").forGetter(Card::compare)
         ).apply(instance, Card::new));

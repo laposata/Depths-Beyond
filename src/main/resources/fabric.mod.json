@@ -10,7 +10,7 @@
   "icon": "assets/depths_beyond/icon.png",
   "entrypoints": {
     "fabric-datagen": [
-      "com.dreamtea.depths_beyond.data.DepthsBeyondModDataGenerator"
+      "com.dreamtea.depths_beyond.DepthsBeyondDataGenerator"
     ],
     "main": [
       "com.dreamtea.depths_beyond.DepthsBeyondMod"

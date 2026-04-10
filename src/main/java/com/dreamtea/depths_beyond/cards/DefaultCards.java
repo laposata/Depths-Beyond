@@ -7,12 +7,14 @@ import com.dreamtea.depths_beyond.effects.CardExecutable;
 import com.dreamtea.depths_beyond.effects.types.CardPlacement;
 import com.dreamtea.depths_beyond.effects.types.CardPriority;
 import com.dreamtea.depths_beyond.stats.StatType;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.Items;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
 
 import static com.dreamtea.depths_beyond.DepthsBeyondMod.ofDB;
 import static com.dreamtea.depths_beyond.utils.ItemUtils.withCount;
@@ -21,7 +23,7 @@ public class DefaultCards {
     public static Card AddGreed = new Card(
             "Greedy",
             ofDB("greedy"),
-            "Gain 2 greed",
+            "Gain 2 @gr",
             30,
             Set.of(),
             CardPriority.EAGER,
@@ -31,7 +33,7 @@ public class DefaultCards {
     public static Card AddWit = new Card(
             "Witty",
             ofDB("witty"),
-            "Gain 2 Wit",
+            "Gain 2 @wi",
             30,
             Set.of(),
             CardPriority.EAGER,
@@ -41,7 +43,7 @@ public class DefaultCards {
     public static Card AddFocus = new Card(
             "Weakly Focus",
             ofDB("weak_focus"),
-            "Gain 10 focus",
+            "Gain 10 @fo",
             45,
             Set.of(),
             CardPriority.EAGER,
@@ -72,8 +74,8 @@ public class DefaultCards {
     );
 
     public static Card MagicalSnack = new Card(
-            "Bloated",
-            ofDB("bloated"),
+            "Magical Snack",
+            ofDB("magical_snack"),
             "Gain slowness 1 and Saturation for 10 seconds",
             60,
             Set.of(),
@@ -91,7 +93,7 @@ public class DefaultCards {
     public static Card RecklessGreed = new Card(
             "Reckless Greed",
             ofDB("reckless_greed"),
-            "Gain 15 greed and 5 luck",
+            "Gain 15 @gr and 5 @lu",
             120,
             Set.of(),
             CardPriority.FINISHER,
@@ -102,7 +104,7 @@ public class DefaultCards {
     public static Card MomentOfCourage = new Card(
             "Moment of Courage",
             ofDB("moment_of_courage"),
-            "remove 1 fear",
+            "remove 1 @fe",
             10,
             Set.of(),
             CardPriority.NONE,
@@ -112,7 +114,7 @@ public class DefaultCards {
     public static Card StupidCourage = new Card(
             "Stupid Courage",
             ofDB("stupid_courage"),
-            "Set fear to 0, lose 2 wit",
+            "Set @fe to 0, lose 2 @wi",
             0,
             Set.of(),
             CardPriority.PREPARED,
@@ -137,7 +139,7 @@ public class DefaultCards {
     public static Card PureTalent = new Card(
             "Pure Talent",
             ofDB("pure_talent"),
-            "If you have collected the goal, gain 10 Greed",
+            "If you have collected the goal, gain 10 @gr",
             30,
             Set.of(),
             CardPriority.EAGER,
@@ -148,7 +150,7 @@ public class DefaultCards {
     public static Card WildCard = new Card(
             "Wild Card",
             ofDB("wild_card"),
-            "Gain either: 5 wit, 5 greed, or 3 decadence",
+            "Gain either: 5 @wi, 5 @gr, or 3 @de",
             40,
             Set.of(),
             CardPriority.LATE,
@@ -160,20 +162,21 @@ public class DefaultCards {
             )
     );
 
-    public static Card PackedRations = new Card(
-            "Pack Rations",
-            ofDB("packed_rations"),
-            "Get 8 golden carrots, and shuffle 5 Bloated into your deck",
-            0,
-            Set.of(),
-            CardPriority.PREPARED,
-            new GiveItem(withCount(Items.GOLDEN_CARROT.getDefaultInstance(), 8)),
-            new AddCard(Bloated.id(), CardPlacement.RANDOM, 5)
-    );
+//    public static Card PackedRations = new Card(
+//            "Pack Rations",
+//            ofDB("packed_rations"),
+//            "Get 8 golden carrots, and shuffle 5 Bloated into your deck",
+//            0,
+//            Set.of(),
+//            CardPriority.PREPARED,
+//            new GiveItem(withCount(Items.GOLDEN_CARROT.getDefaultInstance(), 8)),
+//            new AddCard(Bloated.id(), CardPlacement.RANDOM, 5)
+//    );
+
     public static Card Distractable = new Card(
             "Distractable",
             ofDB("distractable"),
-            "Gain 3 luck, add 3 Distracted to your deck",
+            "Gain 3 @lu, add 3 Distracted to your deck",
             0,
             Set.of(),
             CardPriority.PREPARED,
@@ -184,7 +187,7 @@ public class DefaultCards {
     public static Card CharmOfCourage = new Card(
             "Charm of Courage",
             ofDB("charm_of_courage"),
-            "Lose 5 fear",
+            "Lose 5 @fe",
             60,
             Set.of(Card.FLEETING_TAG),
             CardPriority.FINISHER,
@@ -194,7 +197,7 @@ public class DefaultCards {
     public static Card Lucky = new Card(
             "Lucky",
             ofDB("lucky"),
-            "Gain 3 luck",
+            "Gain 3 @lu",
             0,
             Set.of(Card.FLEETING_TAG),
             CardPriority.PREPARED,
@@ -204,7 +207,7 @@ public class DefaultCards {
     public static Card Panic = new Card(
             "Panic",
             ofDB("panic"),
-            "Gain 1 fear",
+            "Gain 1 @fe",
             60,
             Set.of(Card.STALL_TAG),
             CardPriority.NONE,
@@ -214,33 +217,53 @@ public class DefaultCards {
     public static Card SelfConfidence = new Card(
             "Self Confidence",
             ofDB("self_confidence"),
-            "Gain 5 focus",
+            "Gain 5 @fo",
             0,
             Set.of(Card.FRAGILE_TAG),
             CardPriority.PREPARED,
             new AddStat(StatType.FOCUS, 5, false)
     );
 
-    public static List<Card> Cards(){
-        return List.of(
-                AddGreed,
-                AddFocus,
-                AddWit,
-                Distraction,
-                Bloated,
-                MagicalSnack,
-                RecklessGreed,
-                MomentOfCourage,
-                StupidCourage,
-                Flee,
-                PureTalent,
-                WildCard,
-                PackedRations,
-                Distractable,
-                CharmOfCourage,
-                Lucky,
-                Panic,
-                SelfConfidence
-        );
+    public static Card BoughtTime = new Card(
+            "Bought Time",
+            ofDB("bought_time"),
+            "Don't waste it",
+            60,
+            Set.of(),
+            CardPriority.FINISHER,
+            new All()
+    );
+
+    public static Card BuyingTime = new Card(
+            "Buying Time",
+            ofDB("buying_time"),
+            "Add 5 Bought Time to the end of your deck",
+            180,
+            Set.of(),
+            CardPriority.EAGER,
+            new AddCard(ofDB("bought_time"), CardPlacement.LAST, 5)
+    );
+
+    public static void Cards(BiConsumer<Identifier, Card> provider) {
+        Flee.registerCard(provider);
+        PureTalent.registerCard(provider);
+        WildCard.registerCard(provider);
+        Distraction.registerCard(provider);
+        Bloated.registerCard(provider);
+        MagicalSnack.registerCard(provider);
+        RecklessGreed.registerCard(provider);
+        MomentOfCourage.registerCard(provider);
+        StupidCourage.registerCard(provider);
+        AddGreed.registerCard(provider);
+        AddFocus.registerCard(provider);
+        AddWit.registerCard(provider);
+//                PackedRations.registerCard(provider);
+        Distractable.registerCard(provider);
+        CharmOfCourage.registerCard(provider);
+        Lucky.registerCard(provider);
+        Panic.registerCard(provider);
+        SelfConfidence.registerCard(provider);
+        BoughtTime.registerCard(provider);
+        BuyingTime.registerCard(provider);
     }
 }

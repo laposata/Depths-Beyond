@@ -1,6 +1,5 @@
 package com.dreamtea.depths_beyond.cards;
 
-import com.dreamtea.depths_beyond.dimension.regions.Region;
 import com.dreamtea.depths_beyond.effects.types.CardPlacement;
 import com.dreamtea.depths_beyond.effects.types.CardPriority;
 import com.mojang.serialization.Codec;

@@ -8,10 +8,9 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 
 import static com.dreamtea.depths_beyond.DepthsBeyondMod.ofDB;
+import static com.dreamtea.depths_beyond.effects.EffectRegistries.FILTER_TYPE_REGISTRY;
 
 public record CardFilterType<T extends CardFilter>(MapCodec<T> codec, String description)  {
-    public static final Registry<CardFilterType<?>> REGISTRY = new MappedRegistry<>(
-            ResourceKey.createRegistryKey(ofDB("card_filters")), Lifecycle.stable());
 
     public static final CardFilterType<CardFilter.And> AND = register("and",
             new CardFilterType<>(CardFilter.And.CODEC, CardFilter.And.DESCRIPTION));
@@ -32,6 +31,6 @@ public record CardFilterType<T extends CardFilter>(MapCodec<T> codec, String des
 
 
     public static <T extends CardFilter> CardFilterType<T> register(String id, CardFilterType<T> beanType) {
-        return Registry.register(CardFilterType.REGISTRY, ofDB(id), beanType);
+        return Registry.register(FILTER_TYPE_REGISTRY, ofDB(id), beanType);
     }
 }

@@ -1,17 +1,14 @@
 package com.dreamtea.depths_beyond.effects.types;
 
 import com.dreamtea.depths_beyond.effects.CardExecutable;
-import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceKey;
 
 import static com.dreamtea.depths_beyond.DepthsBeyondMod.ofDB;
+import static com.dreamtea.depths_beyond.effects.EffectRegistries.EXECUTABLE_TYPE_REGISTRY;
 
 public record ExecutableType<T extends CardExecutable>(MapCodec<T> codec, String description) {
-    public static final Registry<ExecutableType<?>> REGISTRY = new MappedRegistry<>(
-            ResourceKey.createRegistryKey(ofDB("card_executable")), Lifecycle.stable());
+
 
 
     public static final ExecutableType<CardExecutable.All> ALL = register("all", new ExecutableType<>(
@@ -38,6 +35,6 @@ public record ExecutableType<T extends CardExecutable>(MapCodec<T> codec, String
             CardExecutable.ExecuteAs.CODEC, CardExecutable.ExecuteAs.DESCRIPTION));
 
     public static <T extends CardExecutable> ExecutableType<T> register(String id, ExecutableType<T> beanType) {
-        return Registry.register(ExecutableType.REGISTRY, ofDB(id), beanType);
+        return Registry.register(EXECUTABLE_TYPE_REGISTRY, ofDB(id), beanType);
     }
 }

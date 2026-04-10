@@ -13,6 +13,8 @@ import net.minecraft.util.valueproviders.IntProviders;
 
 import java.util.List;
 
+import static com.dreamtea.depths_beyond.effects.EffectRegistries.PREDICATE_CODEC;
+
 public interface DungeonIntProviders {
 
     public class DivideProviders extends DungeonIntegerProvider {
@@ -173,7 +175,7 @@ public interface DungeonIntProviders {
 
     public class ActivePlayers extends DungeonIntegerProvider {
         public static final MapCodec<ActivePlayers> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                CardPredicate.PREDICATE_CODEC.fieldOf("player_predicate").orElse(null).forGetter(i -> i.predicate),
+                PREDICATE_CODEC.fieldOf("player_predicate").orElse(null).forGetter(i -> i.predicate),
                 Codec.INT.fieldOf("minInclusive").orElse(0).forGetter(i -> i.min),
                 Codec.INT.fieldOf("maxInclusive").orElse(Integer.MAX_VALUE).forGetter(i -> i.max)
         ).apply(instance, ActivePlayers::new));

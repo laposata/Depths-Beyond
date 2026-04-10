@@ -17,13 +17,7 @@ public abstract class DungeonIntegerProvider implements IntProvider {
     public static <T extends IntProvider> void register(String id, MapCodec<T> beanType) {
         Registry.register(BuiltInRegistries.INT_PROVIDER_TYPE, ofDB(id), beanType);
     }
-    public static void initIntProviders(){
-        register("divide", DungeonIntProviders.DivideProviders.CODEC);
-        register("multiply", DungeonIntProviders.MultiplyProviders.CODEC);
-        register("add", DungeonIntProviders.SumProviders.CODEC);
-        register("stats", DungeonIntProviders.FromStats.CODEC);
-        register("players", DungeonIntProviders.ActivePlayers.CODEC);
-    }
+
     public static void setContext(IntProvider provider, DungeonRun executingPlayer, DepthsBeyondGame game){
         if(provider instanceof DungeonIntegerProvider dip){
             dip.setGameContext(executingPlayer, game);

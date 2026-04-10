@@ -8,10 +8,10 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 
 import static com.dreamtea.depths_beyond.DepthsBeyondMod.ofDB;
+import static com.dreamtea.depths_beyond.effects.EffectRegistries.PREDICATE_TYPE_REGISTRY;
 
 public record PredicateType<T extends CardPredicate>(MapCodec<T> codec, String description) {
-    public static final Registry<PredicateType<?>> REGISTRY = new MappedRegistry<>(
-            ResourceKey.createRegistryKey(ofDB("card_predicate")), Lifecycle.stable());
+
 
     public static final PredicateType<CardPredicate.And> AND = register("and", new PredicateType<>(
             CardPredicate.And.CODEC, CardPredicate.And.DESCRIPTION));
@@ -40,6 +40,6 @@ public record PredicateType<T extends CardPredicate>(MapCodec<T> codec, String d
     public static final PredicateType<CardPredicate.InventoryContains> INVENTORY_CONTAINS = register("inventory", new PredicateType<>(
             CardPredicate.InventoryContains.CODEC, CardPredicate.InventoryContains.DESCRIPTION));
     public static <T extends CardPredicate> PredicateType<T> register(String id, PredicateType<T> beanType) {
-        return Registry.register(PredicateType.REGISTRY, ofDB(id), beanType);
+        return Registry.register(PREDICATE_TYPE_REGISTRY, ofDB(id), beanType);
     }
 }

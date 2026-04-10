@@ -22,12 +22,13 @@ import net.minecraft.world.phys.Vec3;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.dreamtea.depths_beyond.effects.EffectRegistries.EXECUTABLE_CODEC;
+import static com.dreamtea.depths_beyond.effects.EffectRegistries.PREDICATE_CODEC;
+
 public interface CardExecutable {
     void cast(DungeonRun executingPlayer, DepthsBeyondGame game);
     ExecutableType<?> getType();
-    Codec<ExecutableType<?>> executableTypeCodec = ExecutableType.REGISTRY.byNameCodec();
-    Codec<CardExecutable> EXECUTABLE_CODEC = executableTypeCodec.dispatch("type", CardExecutable::getType, ExecutableType::codec);
-    public static All all(CardExecutable ... executables){
+   public static All all(CardExecutable ... executables){
         return new All(executables);
     }
 
@@ -36,10 +37,11 @@ public interface CardExecutable {
             this(predicate, executable, null);
         }
         public static final MapCodec<ExecuteIf> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                CardPredicate.PREDICATE_CODEC.fieldOf("if").forGetter(ExecuteIf::predicate),
-                CardExecutable.EXECUTABLE_CODEC.fieldOf("then").forGetter(ExecuteIf::executable),
-                CardExecutable.EXECUTABLE_CODEC.fieldOf("else").orElse(null).forGetter(ExecuteIf::otherwise)
+                PREDICATE_CODEC.fieldOf("if").forGetter(ExecuteIf::predicate),
+                EXECUTABLE_CODEC.fieldOf("then").forGetter(ExecuteIf::executable),
+                EXECUTABLE_CODEC.optionalFieldOf("else", null).forGetter(ExecuteIf::otherwise)
         ).apply(instance, ExecuteIf::new));
+
         public static final String DESCRIPTION =
                 "If 'predicate' is true, execute 'executable', if 'predicate' is false execute 'otherwise' (if present).";
         @Override
@@ -59,8 +61,8 @@ public interface CardExecutable {
 
     record ExecuteAs(CardPredicate predicate, CardExecutable execute, boolean random, boolean excludeSelf) implements CardExecutable{
         public static final MapCodec<ExecuteAs> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                CardPredicate.PREDICATE_CODEC.fieldOf("predicate").orElse(null).forGetter(ExecuteAs::predicate),
-                CardExecutable.EXECUTABLE_CODEC.fieldOf("execute").forGetter(ExecuteAs::execute),
+                PREDICATE_CODEC.optionalFieldOf("predicate", null).forGetter(ExecuteAs::predicate),
+                EXECUTABLE_CODEC.fieldOf("execute").forGetter(ExecuteAs::execute),
                 Codec.BOOL.fieldOf("random").orElse(false).forGetter(ExecuteAs::random),
                 Codec.BOOL.fieldOf("excludeSelf").orElse(false).forGetter(ExecuteAs::excludeSelf)
         ).apply(instance, ExecuteAs::new));
@@ -97,7 +99,7 @@ public interface CardExecutable {
 
     record All(CardExecutable ... effects) implements CardExecutable{
         public static final MapCodec<All> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                CardExecutable.EXECUTABLE_CODEC.listOf().fieldOf("effects").forGetter(c -> List.of(c.effects))
+                EXECUTABLE_CODEC.listOf().fieldOf("effects").forGetter(c -> List.of(c.effects))
         ).apply(instance, All::new));
         public static final String DESCRIPTION = "Executes all effects in order";
 
@@ -124,7 +126,7 @@ public interface CardExecutable {
         }
         public static final MapCodec<Random> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 IntProviders.CODEC.fieldOf("count").forGetter(Random::count),
-                CardExecutable.EXECUTABLE_CODEC.listOf().fieldOf("effects").forGetter(c -> List.of(c.effects))
+                EXECUTABLE_CODEC.listOf().fieldOf("effects").forGetter(c -> List.of(c.effects))
         ).apply(instance, Random::new));
         public static final String DESCRIPTION = """
                 Executes effects from 'effects' a number of times equal to 'count'. Effects cannot trigger twice.
@@ -159,7 +161,7 @@ public interface CardExecutable {
         }
         public static final MapCodec<Repeat> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 IntProviders.CODEC.fieldOf("count").forGetter(Repeat::count),
-                CardExecutable.EXECUTABLE_CODEC.fieldOf("effect").forGetter(Repeat::effect)
+                EXECUTABLE_CODEC.fieldOf("effect").forGetter(Repeat::effect)
         ).apply(instance, Repeat::new));
         public static final String DESCRIPTION = """
                 Executes 'effect' a number of times equal to 'count'.
