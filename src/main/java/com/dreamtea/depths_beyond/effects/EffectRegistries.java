@@ -5,7 +5,7 @@ import com.dreamtea.depths_beyond.effects.types.DungeonIntegerProvider;
 import com.dreamtea.depths_beyond.effects.types.ExecutableType;
 import com.dreamtea.depths_beyond.effects.types.PredicateType;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.Lifecycle;
+import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
@@ -13,12 +13,12 @@ import net.minecraft.resources.ResourceKey;
 import static com.dreamtea.depths_beyond.DepthsBeyondMod.ofDB;
 
 public interface EffectRegistries {
-    Registry<PredicateType<?>> PREDICATE_TYPE_REGISTRY = new MappedRegistry<>(
-            ResourceKey.createRegistryKey(ofDB("card_predicate")), Lifecycle.stable());
-    Registry<ExecutableType<?>> EXECUTABLE_TYPE_REGISTRY = new MappedRegistry<>(
-            ResourceKey.createRegistryKey(ofDB("card_executable")), Lifecycle.stable());
-    Registry<CardFilterType<?>> FILTER_TYPE_REGISTRY = new MappedRegistry<>(
-            ResourceKey.createRegistryKey(ofDB("card_filters")), Lifecycle.stable());
+    MappedRegistry<PredicateType<?>> PREDICATE_TYPE_REGISTRY = FabricRegistryBuilder.create(
+            ResourceKey.<PredicateType<?>>createRegistryKey(ofDB("card_predicate"))).buildAndRegister();
+    Registry<ExecutableType<?>> EXECUTABLE_TYPE_REGISTRY = FabricRegistryBuilder.create(
+            ResourceKey.<ExecutableType<?>>createRegistryKey(ofDB("card_executable"))).buildAndRegister();
+    Registry<CardFilterType<?>> FILTER_TYPE_REGISTRY = FabricRegistryBuilder.create(
+            ResourceKey.<CardFilterType<?>>createRegistryKey(ofDB("card_filters"))).buildAndRegister();
 
     Codec<PredicateType<?>> predicateTypeCodec = PREDICATE_TYPE_REGISTRY.byNameCodec();
     Codec<CardPredicate> PREDICATE_CODEC = predicateTypeCodec.dispatch("type", CardPredicate::getType, PredicateType::codec);
@@ -32,5 +32,8 @@ public interface EffectRegistries {
         DungeonIntegerProvider.register("add", DungeonIntProviders.SumProviders.CODEC);
         DungeonIntegerProvider.register("stats", DungeonIntProviders.FromStats.CODEC);
         DungeonIntegerProvider.register("players", DungeonIntProviders.ActivePlayers.CODEC);
+        ExecutableType.init();
+        PredicateType.init();
+        CardFilterType.init();
     }
 }

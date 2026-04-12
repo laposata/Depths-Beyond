@@ -17,5 +17,6 @@ public class CommandRegistration {
         DungeonLootCommands.registerCommands();
         StatCommands.registerCommands();
         GateCommand.registerCommands();
+        DataCommands.registerCommands();
     }
 }

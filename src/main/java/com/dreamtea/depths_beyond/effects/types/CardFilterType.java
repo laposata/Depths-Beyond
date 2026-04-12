@@ -11,6 +11,7 @@ import static com.dreamtea.depths_beyond.DepthsBeyondMod.ofDB;
 import static com.dreamtea.depths_beyond.effects.EffectRegistries.FILTER_TYPE_REGISTRY;
 
 public record CardFilterType<T extends CardFilter>(MapCodec<T> codec, String description)  {
+    public static void init(){}
 
     public static final CardFilterType<CardFilter.And> AND = register("and",
             new CardFilterType<>(CardFilter.And.CODEC, CardFilter.And.DESCRIPTION));

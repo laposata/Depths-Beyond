@@ -28,18 +28,18 @@ import static com.dreamtea.depths_beyond.effects.EffectRegistries.PREDICATE_CODE
 public interface CardExecutable {
     void cast(DungeonRun executingPlayer, DepthsBeyondGame game);
     ExecutableType<?> getType();
-   public static All all(CardExecutable ... executables){
+    public static All all(CardExecutable ... executables){
         return new All(executables);
     }
 
-    record ExecuteIf(CardPredicate predicate, CardExecutable executable, CardExecutable otherwise) implements CardExecutable {
-        public ExecuteIf(CardPredicate predicate, CardExecutable executable){
-            this(predicate, executable, null);
+    record ExecuteIf(CardPredicate predicate, CardExecutable then, CardExecutable otherwise) implements CardExecutable {
+        public ExecuteIf(CardPredicate predicate, CardExecutable then){
+            this(predicate, then, null);
         }
         public static final MapCodec<ExecuteIf> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 PREDICATE_CODEC.fieldOf("if").forGetter(ExecuteIf::predicate),
-                EXECUTABLE_CODEC.fieldOf("then").forGetter(ExecuteIf::executable),
-                EXECUTABLE_CODEC.optionalFieldOf("else", null).forGetter(ExecuteIf::otherwise)
+                EXECUTABLE_CODEC.fieldOf("then").forGetter(ExecuteIf::then),
+                EXECUTABLE_CODEC.optionalFieldOf("else", new All()).forGetter(ExecuteIf::otherwise)
         ).apply(instance, ExecuteIf::new));
 
         public static final String DESCRIPTION =
@@ -47,7 +47,7 @@ public interface CardExecutable {
         @Override
         public void cast(DungeonRun executingPlayer, DepthsBeyondGame game) {
             if(predicate.check(executingPlayer, game)){
-                executable.cast(executingPlayer, game);
+                then.cast(executingPlayer, game);
             } else if(otherwise != null){
                 otherwise.cast(executingPlayer, game);
             }
@@ -61,7 +61,7 @@ public interface CardExecutable {
 
     record ExecuteAs(CardPredicate predicate, CardExecutable execute, boolean random, boolean excludeSelf) implements CardExecutable{
         public static final MapCodec<ExecuteAs> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                PREDICATE_CODEC.optionalFieldOf("predicate", null).forGetter(ExecuteAs::predicate),
+                PREDICATE_CODEC.optionalFieldOf("predicate", new CardPredicate.Value(true)).forGetter(ExecuteAs::predicate),
                 EXECUTABLE_CODEC.fieldOf("execute").forGetter(ExecuteAs::execute),
                 Codec.BOOL.fieldOf("random").orElse(false).forGetter(ExecuteAs::random),
                 Codec.BOOL.fieldOf("excludeSelf").orElse(false).forGetter(ExecuteAs::excludeSelf)
@@ -182,26 +182,26 @@ public interface CardExecutable {
         }
     }
 
-    record AddStat(StatType type, IntProvider amount, boolean global) implements CardExecutable {
-        public AddStat(StatType type, int amount, boolean global){
-            this(type, ConstantInt.of(amount), global);
+    record AddStat(StatType stat, IntProvider amount, boolean global) implements CardExecutable {
+        public AddStat(StatType stat, int amount, boolean global){
+            this(stat, ConstantInt.of(amount), global);
         }
         public static final MapCodec<AddStat> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                StatType.CODEC.fieldOf("type").forGetter(AddStat::type),
+                StatType.CODEC.fieldOf("stat").forGetter(AddStat::stat),
                 IntProviders.CODEC.fieldOf("amount").forGetter(AddStat::amount),
-                Codec.BOOL.fieldOf("global").orElse(false).forGetter(AddStat::global)
+                Codec.BOOL.optionalFieldOf("global", false).forGetter(AddStat::global)
             ).apply(instance, AddStat::new));
         public static final String DESCRIPTION = """
-                Increases stat of 'type' by 'amount', or decreases it if 'amount' is negative.
+                Increases stat of 'stat' by 'amount', or decreases it if 'amount' is negative.
                 If 'global' this will apply to all players.
                 """;
         @Override
         public void cast(DungeonRun executingPlayer, DepthsBeyondGame game) {
             DungeonIntegerProvider.setContext(amount, executingPlayer, game);
            if(global){
-               game.getAllPlayers().forEach(p -> p.addStat(type, amount.sample(executingPlayer.getRandom())));
+               game.getAllPlayers().forEach(p -> p.addStat(stat, amount.sample(executingPlayer.getRandom())));
            } else {
-               executingPlayer.addStat(type, amount.sample(executingPlayer.getRandom()));
+               executingPlayer.addStat(stat, amount.sample(executingPlayer.getRandom()));
            }
         }
 
@@ -211,18 +211,18 @@ public interface CardExecutable {
         }
     }
 
-    record SetStat(StatType type, IntProvider amount, boolean global) implements CardExecutable{
-        public SetStat(StatType type, int amount, boolean global){
-            this(type, ConstantInt.of(amount), global);
+    record SetStat(StatType stat, IntProvider amount, boolean global) implements CardExecutable{
+        public SetStat(StatType stat, int amount, boolean global){
+            this(stat, ConstantInt.of(amount), global);
         }
         public static final MapCodec<SetStat> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                StatType.CODEC.fieldOf("type").forGetter(SetStat::type),
+                StatType.CODEC.fieldOf("stat").forGetter(SetStat::stat),
                 IntProviders.CODEC.fieldOf("amount").forGetter(SetStat::amount),
-                Codec.BOOL.fieldOf("global").orElse(false).forGetter(SetStat::global)
+                Codec.BOOL.optionalFieldOf("global", false).forGetter(SetStat::global)
         ).apply(instance, SetStat::new));
 
         public static final String DESCRIPTION = """
-                Sets stat of 'type' to 'amount'.
+                Sets stat of 'stat' to 'amount'.
                 If 'global' this will apply to all players.
                 Stat values will be clamped if they are set outside of allowed range.
                 """;
@@ -230,9 +230,9 @@ public interface CardExecutable {
         public void cast(DungeonRun executingPlayer, DepthsBeyondGame game) {
             DungeonIntegerProvider.setContext(amount, executingPlayer, game);
             if(global){
-                game.getAllPlayers().forEach(p -> p.setStat(type, amount.sample(executingPlayer.getRandom())));
+                game.getAllPlayers().forEach(p -> p.setStat(stat, amount.sample(executingPlayer.getRandom())));
             } else {
-                executingPlayer.setStat(type, amount.sample(executingPlayer.getRandom()));
+                executingPlayer.setStat(stat, amount.sample(executingPlayer.getRandom()));
             }
         }
 
@@ -245,7 +245,7 @@ public interface CardExecutable {
     record GiveEffect(MobEffectInstance effect, boolean global) implements CardExecutable{
         public static final MapCodec<GiveEffect> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 MobEffectInstance.CODEC.fieldOf("effect").forGetter(GiveEffect::effect),
-                Codec.BOOL.fieldOf("global").orElse(false).forGetter(GiveEffect::global)
+                Codec.BOOL.optionalFieldOf("global", false).forGetter(GiveEffect::global)
         ).apply(instance, GiveEffect::new));
         public static final String DESCRIPTION = """
                 Apply 'effect' to the player.
@@ -302,7 +302,7 @@ public interface CardExecutable {
         }
         public static final MapCodec<PlayerHealth> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 IntProviders.CODEC.fieldOf("health").forGetter(PlayerHealth::health),
-                Codec.BOOL.fieldOf("global").orElse(false).forGetter(PlayerHealth::global)
+                Codec.BOOL.optionalFieldOf("global", false).forGetter(PlayerHealth::global)
         ).apply(instance, PlayerHealth::new));
 
         public static final String DESCRIPTION = """

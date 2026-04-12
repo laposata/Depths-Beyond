@@ -7,19 +7,32 @@ import net.minecraft.resources.ResourceKey;
 import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.*;
+import java.util.function.Function;
 
 import static com.dreamtea.depths_beyond.DepthsBeyondMod.ofDB;
 import static net.minecraft.resources.ResourceKey.createRegistryKey;
 
 public class CardRegistry {
-    public static final ResourceKey<Registry<Card>> CARDS = createRegistryKey(ofDB("card"));
-
+    private static final CardRegistry instance = new CardRegistry();
     private final Map<Identifier, Card> cards;
-    public CardRegistry(@UnknownNullability List<CardHolder> cards) {
+
+    private CardRegistry() {
         this.cards = new HashMap<>();
-        cards.forEach(c -> this.cards.put(c.id().identifier(), c.value()));
     }
 
+    public static CardRegistry addCards(Map<Identifier, Card> cards){
+        instance.cards.putAll(cards);
+        return instance;
+    }
+
+    public static CardRegistry addCard(Identifier id, Card card){
+        instance.cards.put(id, card);
+        return instance;
+    }
+
+    public static CardRegistry get(){
+        return instance;
+    }
     public Card getCard(Identifier id){
         return cards.get(id);
     }

@@ -23,11 +23,11 @@ import static com.dreamtea.depths_beyond.effects.EffectRegistries.PREDICATE_CODE
 public interface CardPredicate {
     boolean check(DungeonRun executingPlayer, DepthsBeyondGame game);
     PredicateType<?> getType();
-    
+
     record EachPass(CardPredicate playerPredicate, CardPredicate check, boolean excludeSelf) implements CardPredicate{
         public static final MapCodec<EachPass> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                PREDICATE_CODEC.optionalFieldOf("playerPredicate", null).forGetter(EachPass::playerPredicate),
-                PREDICATE_CODEC.optionalFieldOf("check", null).forGetter(EachPass::check),
+                PREDICATE_CODEC.optionalFieldOf("playerPredicate", new Value(true)).forGetter(EachPass::playerPredicate),
+                PREDICATE_CODEC.fieldOf("check").forGetter(EachPass::check),
                 Codec.BOOL.fieldOf("excludeSelf").orElse(false).forGetter(EachPass::excludeSelf)
         ).apply(instance, EachPass::new));
         public static final String DESCRIPTION = """
@@ -57,8 +57,8 @@ public interface CardPredicate {
 
     record AnyPass(CardPredicate playerPredicate, CardPredicate check, boolean excludeSelf) implements CardPredicate{
         public static final MapCodec<AnyPass> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                PREDICATE_CODEC.optionalFieldOf("playerPredicate", null).forGetter(AnyPass::playerPredicate),
-                PREDICATE_CODEC.optionalFieldOf("check", null).forGetter(AnyPass::check),
+                PREDICATE_CODEC.optionalFieldOf("playerPredicate", new Value(true)).forGetter(AnyPass::playerPredicate),
+                PREDICATE_CODEC.fieldOf("check").forGetter(AnyPass::check),
                 Codec.BOOL.fieldOf("excludeSelf").orElse(false).forGetter(AnyPass::excludeSelf)
         ).apply(instance, AnyPass::new));
         public static final String DESCRIPTION = """
@@ -126,6 +126,25 @@ public interface CardPredicate {
         @Override
         public PredicateType<?> getType() {
             return PredicateType.AND;
+        }
+
+    }
+
+    record Value(boolean value) implements CardPredicate {
+        public static final MapCodec<Value> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                Codec.BOOL.fieldOf("Value").forGetter(Value::value)
+        ).apply(instance, Value::new));
+
+        public static final String DESCRIPTION = "Outputs 'value'";
+
+        @Override
+        public boolean check(DungeonRun executingPlayer, DepthsBeyondGame game) {
+            return value;
+        }
+
+        @Override
+        public PredicateType<?> getType() {
+            return PredicateType.VALUE;
         }
 
     }

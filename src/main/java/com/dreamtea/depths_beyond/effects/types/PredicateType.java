@@ -11,10 +11,12 @@ import static com.dreamtea.depths_beyond.DepthsBeyondMod.ofDB;
 import static com.dreamtea.depths_beyond.effects.EffectRegistries.PREDICATE_TYPE_REGISTRY;
 
 public record PredicateType<T extends CardPredicate>(MapCodec<T> codec, String description) {
-
+    public static void init(){}
 
     public static final PredicateType<CardPredicate.And> AND = register("and", new PredicateType<>(
             CardPredicate.And.CODEC, CardPredicate.And.DESCRIPTION));
+    public static final PredicateType<CardPredicate.Value> VALUE = register("value", new PredicateType<>(
+            CardPredicate.Value.CODEC, CardPredicate.Value.DESCRIPTION));
     public static final PredicateType<CardPredicate.Not> NOT = register("not", new PredicateType<>(
             CardPredicate.Not.CODEC, CardPredicate.Not.DESCRIPTION));
     public static final PredicateType<CardPredicate.Or> OR = register("or", new PredicateType<>(
@@ -39,6 +41,7 @@ public record PredicateType<T extends CardPredicate>(MapCodec<T> codec, String d
             CardPredicate.Card.CODEC, CardPredicate.Card.DESCRIPTION));
     public static final PredicateType<CardPredicate.InventoryContains> INVENTORY_CONTAINS = register("inventory", new PredicateType<>(
             CardPredicate.InventoryContains.CODEC, CardPredicate.InventoryContains.DESCRIPTION));
+
     public static <T extends CardPredicate> PredicateType<T> register(String id, PredicateType<T> beanType) {
         return Registry.register(PREDICATE_TYPE_REGISTRY, ofDB(id), beanType);
     }

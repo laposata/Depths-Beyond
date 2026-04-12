@@ -60,7 +60,7 @@ public class SurvivalPlayerData extends SavedData {
 
         // The first time the following 'computeIfAbsent' function is called, it creates min new 'SavedBlockData'
         // instance and stores it inside the 'DimensionDataStorage'.
-        // Subsequent calls to 'computeIfAbsent' returns the saved 'SavedBlockData' NBT on disk to the Codec in our type,
+        // Subsequent calls to 'computeIfAbsent' returns the saved 'SavedBlockData' NBT on disk to the Codec in our stat,
         // using the Codec to decode the NBT into our saved data.
         return level.getDataStorage().computeIfAbsent(TYPE);
     }

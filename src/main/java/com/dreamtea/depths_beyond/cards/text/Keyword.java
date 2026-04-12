@@ -4,11 +4,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.*;
-import net.minecraft.resources.Identifier;
 
 import java.util.Objects;
-
-import static com.dreamtea.depths_beyond.DepthsBeyondMod.ofDB;
 
 public final class Keyword {
     public static final MapCodec<Keyword> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
@@ -26,8 +23,8 @@ public final class Keyword {
         this.inline = inline;
         this.hoverText = hoverText;
     }
-    public Component insertKeyword(Component startingText) {
-        return startingText;
+    public String getTag(){
+        return tag;
     }
 
     public MutableComponent createInsert() {
