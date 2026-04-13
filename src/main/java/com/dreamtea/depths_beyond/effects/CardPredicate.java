@@ -229,7 +229,7 @@ public interface CardPredicate {
 
     record GoalComplete(boolean global) implements CardPredicate {
         public static final MapCodec<GoalComplete> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-                Codec.BOOL.fieldOf("global").orElse(false).forGetter(GoalComplete::global)
+                Codec.BOOL.optionalFieldOf("global", false).forGetter(GoalComplete::global)
         ).apply(instance, GoalComplete::new));
         public static final String DESCRIPTION = """
                 Has the player gotten to their goal.

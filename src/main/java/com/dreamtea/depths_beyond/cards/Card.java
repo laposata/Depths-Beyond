@@ -1,32 +1,28 @@
 package com.dreamtea.depths_beyond.cards;
 
 import com.dreamtea.depths_beyond.DepthsBeyondMod;
+import com.dreamtea.depths_beyond.cards.text.KeywordRegistry;
+import com.dreamtea.depths_beyond.effects.CardExecutable;
 import com.dreamtea.depths_beyond.effects.CardPredicate;
 import com.dreamtea.depths_beyond.effects.types.CardFilterType;
 import com.dreamtea.depths_beyond.effects.types.CardPriority;
-import com.dreamtea.depths_beyond.effects.CardExecutable;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.item.crafting.CampfireCookingRecipe;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeSerializer;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.stream.Stream;
 
 import static com.dreamtea.depths_beyond.DepthsBeyondMod.ofDB;
 import static com.dreamtea.depths_beyond.effects.EffectRegistries.EXECUTABLE_CODEC;
@@ -34,12 +30,23 @@ import static com.dreamtea.depths_beyond.effects.EffectRegistries.EXECUTABLE_COD
 public record Card(
         String name,
         Identifier id,
-        String description,
+        Component description,
         int castTime,
         Set<String> tags,
         CardPriority priority,
         CardExecutable executable
 ) {
+    public Card(
+            String name,
+            Identifier id,
+            Component description,
+            Integer castTime,
+            List<String> tags,
+            CardPriority priority,
+            CardExecutable executable
+    ){
+        this(name, id, description, castTime, new HashSet<>(tags), priority, executable);
+    }
     public Card(
             String name,
             Identifier id,
@@ -49,20 +56,9 @@ public record Card(
             CardPriority priority,
             CardExecutable ... executable
     ) {
-        this(name, id, description, castTime, Set.of(), priority, new CardExecutable.All(executable));
+        this(name, id, Component.literal(description), castTime, tags, priority, wrapWithAll(executable));
     }
     public Card(
-            String name,
-            Identifier id,
-            String description,
-            int castTime,
-            List<String> tags,
-            CardPriority priority,
-            CardExecutable executable
-    ) {
-        this(name, id, description, castTime, new HashSet<>(tags), priority, executable);
-    }
-    Card(
             String name,
             Identifier id,
             String description,
@@ -72,13 +68,13 @@ public record Card(
             CardPredicate predicate,
             CardExecutable executable
     ) {
-        this(name, id, description, castTime, tags, priority, new CardExecutable.ExecuteIf(predicate, executable, null));
+        this(name, id, description, castTime, tags, priority, new CardExecutable.ExecuteIf(predicate, executable));
     }
 
     public static MapCodec<Card> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Codec.STRING.fieldOf("name").forGetter(Card::name),
             Identifier.CODEC.fieldOf("id").forGetter(Card::id),
-            Codec.STRING.fieldOf("description").forGetter(Card::description),
+            ComponentSerialization.CODEC.fieldOf("description").forGetter(Card::description),
             Codec.INT.fieldOf("cast_time").forGetter(Card::castTime),
             Codec.STRING.listOf().fieldOf("tags").orElse(List.of()).forGetter(i -> new ArrayList<>(i.tags)),
             CardPriority.CODEC.fieldOf("priority").orElse(CardPriority.NONE).forGetter(Card::priority),
@@ -98,21 +94,21 @@ public record Card(
     /**
      * If you lose a run this card is lost
      */
-    public static final String FRAGILE_TAG = "fragile";
+    public static final String FRAGILE_TAG = "@fr";
     /**
      * Once this card is cast, it is lost
      */
-    public static final String FLEETING_TAG = "fleeting";
+    public static final String FLEETING_TAG = "@fl";
     /**
      * This card was generated and does not get kept
      */
-    public static final String TEMPORARY_TAG = "temporary";
+    public static final String TEMPORARY_TAG = "@te";
     /**
      * This card is bad
      */
-    public static final String CURSE_TAG = "curse";
+    public static final String CURSE_TAG = "@cu";
 
-    public static final String STALL_TAG = "stall";
+    public static final String STALL_TAG = "@st";
 
     @Override
     public boolean equals(Object obj) {
@@ -147,4 +143,22 @@ public record Card(
         DepthsBeyondMod.LOGGER.info("Creating " + this.id());
         provider.accept(this.id, this);
     }
+
+    public MutableComponent processDescription(){
+        return parseDescription(this.description);
+    }
+
+    private static MutableComponent parseDescription(Component comp){
+        MutableComponent base = (MutableComponent) comp.visit(KeywordRegistry::insertKeyword, comp.getStyle()).get();
+
+        comp.getSiblings().forEach(sibling -> base.append(parseDescription(sibling)));
+        return base;
+    }
+    private static CardExecutable wrapWithAll(CardExecutable ... executables){
+        if(executables.length == 1){
+            return executables[0];
+        }
+        return new CardExecutable.All(executables);
+    }
+
 }

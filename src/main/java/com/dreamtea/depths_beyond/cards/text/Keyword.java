@@ -30,8 +30,9 @@ public final class Keyword {
     public MutableComponent createInsert() {
         Style style = inline.getStyle();
         HoverEvent hover = new HoverEvent.ShowText(hoverText);
-        style.withHoverEvent(hover);
+        style = style.withHoverEvent(hover);
         MutableComponent component = inline.copy();
+
         component.setStyle(style);
         return component;
     }
@@ -64,6 +65,10 @@ public final class Keyword {
                 "tag=" + tag + ", " +
                 "inline=" + inline + ", " +
                 "hoverText=" + hoverText + ']';
+    }
+
+    public MutableComponent description(){
+        return Component.literal("@" + this.tag+ " ").append(createInsert()).append(" ").append(hoverText);
     }
 
 }

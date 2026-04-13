@@ -1,23 +1,27 @@
 package com.dreamtea.depths_beyond.cards;
 
-import static com.dreamtea.depths_beyond.effects.CardExecutable.*;
-import static com.dreamtea.depths_beyond.effects.CardPredicate.*;
-
 import com.dreamtea.depths_beyond.effects.CardExecutable;
 import com.dreamtea.depths_beyond.effects.types.CardPlacement;
 import com.dreamtea.depths_beyond.effects.types.CardPriority;
 import com.dreamtea.depths_beyond.stats.StatType;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.Items;
 
-import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
 import static com.dreamtea.depths_beyond.DepthsBeyondMod.ofDB;
+import static com.dreamtea.depths_beyond.effects.CardExecutable.*;
+import static com.dreamtea.depths_beyond.effects.CardPredicate.GoalComplete;
+import static com.dreamtea.depths_beyond.effects.CardPredicate.Not;
 import static com.dreamtea.depths_beyond.utils.ItemUtils.withCount;
+import static net.minecraft.ChatFormatting.*;
 
 public class DefaultCards {
     public static Card AddGreed = new Card(
@@ -93,7 +97,7 @@ public class DefaultCards {
     public static Card RecklessGreed = new Card(
             "Reckless Greed",
             ofDB("reckless_greed"),
-            "Gain 15 @gr and 5 @lu",
+            "Gain 15 @gr@ and 5 @lu",
             120,
             Set.of(),
             CardPriority.FINISHER,
@@ -114,7 +118,7 @@ public class DefaultCards {
     public static Card StupidCourage = new Card(
             "Stupid Courage",
             ofDB("stupid_courage"),
-            "Set @fe to 0, lose 2 @wi",
+            "Set @fe@ to 0, lose 2 @wi",
             0,
             Set.of(),
             CardPriority.PREPARED,
@@ -150,7 +154,7 @@ public class DefaultCards {
     public static Card WildCard = new Card(
             "Wild Card",
             ofDB("wild_card"),
-            "Gain either: 5 @wi, 5 @gr, or 3 @de",
+            "Gain either: 5 @wi@, 5 @gr@, or 3 @de",
             40,
             Set.of(),
             CardPriority.LATE,
@@ -176,7 +180,7 @@ public class DefaultCards {
     public static Card Distractable = new Card(
             "Distractable",
             ofDB("distractable"),
-            "Gain 3 @lu, add 3 Distracted to your deck",
+            "Gain 3 @lu@, add 3 Distracted to your deck",
             0,
             Set.of(),
             CardPriority.PREPARED,
@@ -244,6 +248,32 @@ public class DefaultCards {
             new AddCard(ofDB("bought_time"), CardPlacement.LAST, 5)
     );
 
+    public static Card createFancyCard(){
+        MutableComponent firstBit = Component.literal("First bit");
+        Style firstStyle = Style.EMPTY.withColor(TextColor.fromLegacyFormat(GREEN));
+        firstBit.setStyle(firstStyle);
+        MutableComponent secondBit = Component.literal("second bit @fr");
+        Style secondStyle = Style.EMPTY.withColor(TextColor.fromLegacyFormat(BLUE));
+        secondBit.setStyle(secondStyle);
+
+        MutableComponent firstBitB = Component.literal("First bit b");
+        Style firstStyleB = Style.EMPTY.withColor(TextColor.fromLegacyFormat(RED));
+        firstBitB.setStyle(firstStyleB);
+        MutableComponent secondBitB = Component.literal("second bit b @fr");
+        Style secondStyleB = Style.EMPTY.withColor(TextColor.fromLegacyFormat(YELLOW));
+        secondBitB.setStyle(secondStyleB);
+
+        MutableComponent combined = firstBit.append(secondBit);
+        MutableComponent combinedB = firstBitB.append(secondBitB);
+        MutableComponent externalAdded = Component.literal("outside @fr@");
+        Style externalStyle = Style.EMPTY.withBold(true);
+        externalAdded.setStyle(externalStyle);
+        externalAdded.append(combined);
+        combinedB.append(externalAdded);
+        return new Card("Pretty Card", ofDB("pretty"), combinedB, 10, Set.of(), CardPriority.EAGER, new All());
+    }
+    public static Card FancyCard = createFancyCard();
+
     public static void Cards(BiConsumer<Identifier, Card> provider) {
         Flee.registerCard(provider);
         PureTalent.registerCard(provider);
@@ -257,7 +287,7 @@ public class DefaultCards {
         AddGreed.registerCard(provider);
         AddFocus.registerCard(provider);
         AddWit.registerCard(provider);
-//                PackedRations.registerCard(provider);
+//        PackedRations.registerCard(provider);
         Distractable.registerCard(provider);
         CharmOfCourage.registerCard(provider);
         Lucky.registerCard(provider);
@@ -265,5 +295,6 @@ public class DefaultCards {
         SelfConfidence.registerCard(provider);
         BoughtTime.registerCard(provider);
         BuyingTime.registerCard(provider);
+        FancyCard.registerCard(provider);
     }
 }

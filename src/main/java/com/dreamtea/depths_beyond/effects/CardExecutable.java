@@ -39,7 +39,7 @@ public interface CardExecutable {
         public static final MapCodec<ExecuteIf> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 PREDICATE_CODEC.fieldOf("if").forGetter(ExecuteIf::predicate),
                 EXECUTABLE_CODEC.fieldOf("then").forGetter(ExecuteIf::then),
-                EXECUTABLE_CODEC.optionalFieldOf("else", new All()).forGetter(ExecuteIf::otherwise)
+                EXECUTABLE_CODEC.optionalFieldOf("else", null).forGetter(ExecuteIf::otherwise)
         ).apply(instance, ExecuteIf::new));
 
         public static final String DESCRIPTION =

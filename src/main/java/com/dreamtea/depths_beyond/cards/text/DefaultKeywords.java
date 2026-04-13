@@ -15,7 +15,9 @@ public class DefaultKeywords {
     private static final Map<Identifier, Keyword> keywords = new HashMap<>();
     public static Keyword createKeyword(String tag, String name, int color, boolean negative, String hoverText){
         Keyword output = Keyword.createKeyword(tag, name, color, negative, hoverText);
-        keywords.put(ofDB(name.toLowerCase()), output);
+        String idName = name.toLowerCase();
+        idName = idName.replace(" ", "-");
+        keywords.put(ofDB(idName), output);
         return output;
     }
 
@@ -35,4 +37,25 @@ public class DefaultKeywords {
             "Increase the speed at which you cast spells");
     public static Keyword Fear = createKeyword("fe", "Fear", 6494500, true,
             "Makes everything harder");
+    public static Keyword Fragile = createKeyword("fr", "Fragile", 6494500, true,
+            "If you lose a run while this spell is in your deck, it is lost");
+    public static Keyword Fleeting = createKeyword("fl", "Fleeting", 6494500, true,
+            "If you cast this spell it will not be returned to you");
+    public static Keyword Curse = createKeyword("cu", "Curse", 6494500, true,
+            "This spell harms you if cast");
+    public static Keyword Temporary = createKeyword("te", "Temporary", 6494500, false,
+            "This spell will not return when you leave the depths");
+    public static Keyword Stall = createKeyword("st", "Stall", 6494500, true,
+            "If you have no spells left, you will start casting a stall spell");
+
+    public static Keyword Prepared = createKeyword("prepared", "Prepared", 6494500, false,
+            "All Prepared spells will be cast first");
+    public static Keyword Finisher = createKeyword("finisher", "Finisher", 6494500, false,
+            "All Finisher spells will be cast after all other spells have been cast");
+    public static Keyword Eager = createKeyword("eager", "Eager", 6494500, false,
+            "These spells will generally be cast early in a run");
+    public static Keyword Late = createKeyword("late", "Late", 6494500, false,
+            "These spells will generally be cast later in a run");
+    public static Keyword NoPriority = createKeyword("none", "No Priority", 6494500, false,
+            "These spells will be cast at some point");
 }

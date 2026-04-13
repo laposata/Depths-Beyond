@@ -46,6 +46,7 @@ public class DeckManager {
     public List<Card> getGenerated(){
         return generatedCards;
     }
+
     public List<Card> getDeck(CardLocation loc){
         return switch (loc){
             case STARTING -> getStartingDeck();
@@ -54,6 +55,7 @@ public class DeckManager {
             case GENERATED -> getGenerated();
         };
     }
+
     public void insertCard(Card card,  CardPlacement placement){
         switch (placement){
             case NEXT -> currentDeck.addFirst(card);

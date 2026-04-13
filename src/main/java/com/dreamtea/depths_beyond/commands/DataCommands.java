@@ -4,47 +4,74 @@ import com.dreamtea.depths_beyond.cards.Card;
 import com.dreamtea.depths_beyond.cards.CardRegistry;
 import com.dreamtea.depths_beyond.cards.text.Keyword;
 import com.dreamtea.depths_beyond.cards.text.KeywordRegistry;
+import com.dreamtea.depths_beyond.cards.text.SpellbookWriter;
+import com.dreamtea.depths_beyond.effects.CardExecutable;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.ChatType;
-import net.minecraft.network.chat.OutgoingChatMessage;
-import net.minecraft.network.chat.PlayerChatMessage;
+import net.minecraft.network.chat.*;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.Permissions;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Collection;
 
 public class DataCommands {
     public static void registerCommands(){
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            dispatcher.register(Commands.literal("data")
+            dispatcher.register(Commands.literal("generated")
                     .requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_ADMIN))
                             .then(Commands.literal("cards").executes(DataCommands::executeListCards))
-                            .then(Commands.literal("keywords").executes(DataCommands::executeListKeywords)
-                            )
+                            .then(Commands.literal("keywords").executes(DataCommands::executeListKeywords))
+                            .then(Commands.literal("books").executes(DataCommands::executeBooks))
+                            .then(Commands.literal("codecs").executes(DataCommands::executeCodecs))
                         );
         });
     }
 
     private static int executeListCards(CommandContext<CommandSourceStack> c) {
         Collection<Card> allCards = CardRegistry.get().getAllCards();
-        CommandSourceStack source = c.getSource();
-        String output = allCards.stream().map(Card::toString).reduce((a, b) -> a + "\n" + b).orElse("");
-        OutgoingChatMessage tracked = OutgoingChatMessage.create(PlayerChatMessage.system(output));
-        ChatType.Bound outgoingChatType = ChatType.bind(ChatType.SAY_COMMAND, source);
-
-        c.getSource().sendChatMessage(tracked, false, outgoingChatType);
+        Component output = allCards.stream()
+                .map(card -> (MutableComponent)(card.processDescription()))
+                .reduce((a, b) -> a.append(Component.literal("\n").append(b)))
+                .orElse(Component.empty());
+        c.getSource().sendSystemMessage(output);
         return allCards.size();
     }
     private static int executeListKeywords(CommandContext<CommandSourceStack> c) {
         Collection<Keyword> allKeywords = KeywordRegistry.getAllKeywords();
-        CommandSourceStack source = c.getSource();
-        String output = allKeywords.stream().map(Keyword::toString).reduce((a, b) -> a + "\n" + b).orElse("");
-        OutgoingChatMessage tracked = OutgoingChatMessage.create(PlayerChatMessage.system(output));
-        ChatType.Bound outgoingChatType = ChatType.bind(ChatType.SAY_COMMAND, source);
-
-        c.getSource().sendChatMessage(tracked, false, outgoingChatType);
+        MutableComponent output = allKeywords.stream()
+                .map(Keyword::description)
+                .reduce((a, b) -> a.append(Component.literal("\n").append(b)))
+                .orElse(Component.empty());
+        c.getSource().sendSystemMessage(output);
         return allKeywords.size();
+    }
+    private static int executeBooks(CommandContext<CommandSourceStack> c) {
+        Collection<Card> allCards = CardRegistry.get().getAllCards();
+        ServerPlayer player = c.getSource().getPlayer();
+        Vec3 pos = player.position();
+        ServerLevel level = c.getSource().getLevel();
+        allCards.stream().map(SpellbookWriter::createBook).forEach(s -> {
+            level.addFreshEntity(new ItemEntity(level, pos.x, pos.y, pos.z, s));
+        });
+
+        return 1;
+    }
+    private static int executeCodecs(CommandContext<CommandSourceStack> c) {
+
+        c.getSource().sendSystemMessage(
+                Component.literal(CardExecutable.AddStat.CODEC.toString())
+        );
+        c.getSource().sendSystemMessage(
+                Component.literal(CardExecutable.AddStat.CODEC.codec().toString())
+        );
+        c.getSource().sendSystemMessage(
+                Component.literal(CardExecutable.AddStat.CODEC.stable().toString())
+        );
+        return 1;
     }
 }
