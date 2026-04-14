@@ -13,6 +13,7 @@ public class GameStats {
     private float focus = 0;
     private float fear = 0;
     private final ServerPlayer player;
+
     public GameStats(@NotNull ServerPlayer player){
         this.player = player;
     }

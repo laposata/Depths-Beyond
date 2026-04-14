@@ -1,5 +1,6 @@
 package com.dreamtea.depths_beyond.effects;
 
+import com.dreamtea.depths_beyond.cards.CardRegistry;
 import com.dreamtea.depths_beyond.dungeon.DepthsBeyondGame;
 import com.dreamtea.depths_beyond.dungeon.DungeonRun;
 import com.dreamtea.depths_beyond.effects.types.DungeonIntegerProvider;
@@ -325,7 +326,7 @@ public interface CardPredicate {
         @Override
         public boolean check(DungeonRun executingPlayer, DepthsBeyondGame game) {
             return compare.test(
-                    game.getCardRegistry()
+                    CardRegistry.get()
                     .getAllCards()
                     .stream()
                     .filter(c -> card.filter(c, executingPlayer, game)).count(),

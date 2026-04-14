@@ -1,5 +1,6 @@
 package com.dreamtea.depths_beyond.cards;
 
+import com.dreamtea.depths_beyond.DepthsBeyondMod;
 import com.dreamtea.depths_beyond.effects.types.CardPlacement;
 import com.dreamtea.depths_beyond.effects.types.CardPriority;
 import com.mojang.serialization.Codec;
@@ -26,11 +27,13 @@ public class DeckManager {
         this.currentDeck = shuffleDeck(this.startingDeck);
         this.discard = new ArrayList<>();
         this.generatedCards = new ArrayList<>();
+        DepthsBeyondMod.LOGGER.debug(this.currentDeck.stream().map(Card::briefDescriptor).collect(Collectors.joining("\n")));
     }
 
     public Card pullNextCard(){
         Card next = currentDeck.removeFirst();
         discard.add(next);
+        DepthsBeyondMod.LOGGER.debug("Drawing: {}", next.briefDescriptor());
         return next;
     }
 
@@ -56,7 +59,7 @@ public class DeckManager {
         };
     }
 
-    public void insertCard(Card card,  CardPlacement placement){
+    public void insertCard(Card card, CardPlacement placement){
         switch (placement){
             case NEXT -> currentDeck.addFirst(card);
             case LAST -> currentDeck.add(card);

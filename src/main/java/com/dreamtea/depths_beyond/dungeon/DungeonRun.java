@@ -1,17 +1,21 @@
 package com.dreamtea.depths_beyond.dungeon;
 
+import com.dreamtea.depths_beyond.cards.CardRegistry;
 import com.dreamtea.depths_beyond.cards.DeckManager;
+import com.dreamtea.depths_beyond.effects.OnGoingEffectManager;
 import com.dreamtea.depths_beyond.effects.types.CardPlacement;
 import com.dreamtea.depths_beyond.data.PlayerPreGameState;
 import com.dreamtea.depths_beyond.cards.Card;
+import com.dreamtea.depths_beyond.effects.types.ExecutedSpell;
 import com.dreamtea.depths_beyond.stats.DropType;
 import com.dreamtea.depths_beyond.stats.GameStats;
 import com.dreamtea.depths_beyond.stats.StatType;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class DungeonRun {
     private final PlayerPreGameState initState;
@@ -20,24 +24,44 @@ public class DungeonRun {
     private boolean started;
     private ServerPlayer player;
     private final DeckManager deck;
-    private int castTime = 0;
+    private final OnGoingEffectManager spellManager;
 
     public DungeonRun(ServerPlayer player){
         initState = new PlayerPreGameState(player);
         this.player = player;
         this.stats = new GameStats(player);
-        this.deck = new DeckManager(List.of(), player.getRandom());
+        this.deck = new DeckManager(
+                new ArrayList<>(CardRegistry.get().getAllCards()),
+                player.getRandom());
+        this.spellManager = new OnGoingEffectManager();
     }
+
 
     public void insertCard(Card card, CardPlacement placement){
         deck.insertCard(card, placement);
     }
 
-    public void executeCard(DepthsBeyondGame game){
-        Card card = deck.pullNextCard();
-        castTime = (int)(card.castTime() * 20 * stats.getFocusModifier());
-        card.executable().cast(this, game);
+    public void tick(DepthsBeyondGame game, int time){
+        if(spellManager.tick(time)){
+            drawCard(game, time);
+        }
     }
+    public GameStats getStats(){
+        return stats;
+    }
+    public void drawCard(DepthsBeyondGame game, int time){
+        Card card = deck.pullNextCard();
+        addSpellToQueue(time, card, game,true);
+    }
+
+    public void addSpellToQueue(int time, Card c, DepthsBeyondGame game, boolean normalCast){
+        spellManager.addSpellCast(
+                new ExecutedSpell(c, this, game),
+                time,
+                normalCast
+        );
+    }
+
 
     public DeckManager getDeck(){
         return deck;
@@ -45,8 +69,9 @@ public class DungeonRun {
     public boolean hasStartedRun(){
         return started;
     }
-    public void startRun(){
+    public void startRun(DepthsBeyondGame game, int time){
         started = true;
+        drawCard(game, time);
     }
     public void tickPlayer(){
         stats.tickFear();
@@ -85,4 +110,8 @@ public class DungeonRun {
     public ServerPlayer getPlayer(){
         return player;
     }
+    public int getCastTime(int cardCastInSec){
+        return (int)(stats.getFocusModifier() * cardCastInSec * 20);
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.dreamtea.depths_beyond.cards;
 
 import com.dreamtea.depths_beyond.effects.CardExecutable;
+import com.dreamtea.depths_beyond.effects.CommandEffects;
 import com.dreamtea.depths_beyond.effects.types.CardPlacement;
 import com.dreamtea.depths_beyond.effects.types.CardPriority;
 import com.dreamtea.depths_beyond.stats.StatType;
@@ -248,31 +249,16 @@ public class DefaultCards {
             new AddCard(ofDB("bought_time"), CardPlacement.LAST, 5)
     );
 
-    public static Card createFancyCard(){
-        MutableComponent firstBit = Component.literal("First bit");
-        Style firstStyle = Style.EMPTY.withColor(TextColor.fromLegacyFormat(GREEN));
-        firstBit.setStyle(firstStyle);
-        MutableComponent secondBit = Component.literal("second bit @fr");
-        Style secondStyle = Style.EMPTY.withColor(TextColor.fromLegacyFormat(BLUE));
-        secondBit.setStyle(secondStyle);
+    public static Card CommandCard = new Card(
+            "Command Card",
+            ofDB("command_card"),
+            "Executes a say command",
+            10,
+            Set.of(),
+            CardPriority.EAGER,
+            new CommandEffects.ExecuteCommand("say hello", "Command Card")
+    );
 
-        MutableComponent firstBitB = Component.literal("First bit b");
-        Style firstStyleB = Style.EMPTY.withColor(TextColor.fromLegacyFormat(RED));
-        firstBitB.setStyle(firstStyleB);
-        MutableComponent secondBitB = Component.literal("second bit b @fr");
-        Style secondStyleB = Style.EMPTY.withColor(TextColor.fromLegacyFormat(YELLOW));
-        secondBitB.setStyle(secondStyleB);
-
-        MutableComponent combined = firstBit.append(secondBit);
-        MutableComponent combinedB = firstBitB.append(secondBitB);
-        MutableComponent externalAdded = Component.literal("outside @fr@");
-        Style externalStyle = Style.EMPTY.withBold(true);
-        externalAdded.setStyle(externalStyle);
-        externalAdded.append(combined);
-        combinedB.append(externalAdded);
-        return new Card("Pretty Card", ofDB("pretty"), combinedB, 10, Set.of(), CardPriority.EAGER, new All());
-    }
-    public static Card FancyCard = createFancyCard();
 
     public static void Cards(BiConsumer<Identifier, Card> provider) {
         Flee.registerCard(provider);
@@ -295,6 +281,6 @@ public class DefaultCards {
         SelfConfidence.registerCard(provider);
         BoughtTime.registerCard(provider);
         BuyingTime.registerCard(provider);
-        FancyCard.registerCard(provider);
+        CommandCard.registerCard(provider);
     }
 }

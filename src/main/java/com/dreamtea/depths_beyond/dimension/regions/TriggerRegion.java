@@ -1,5 +1,6 @@
 package com.dreamtea.depths_beyond.dimension.regions;
 
+import com.dreamtea.depths_beyond.DepthsBeyondMod;
 import com.dreamtea.depths_beyond.config.DepthsBeyondConfig;
 import com.dreamtea.depths_beyond.data.region_data.TriggerRegionData;
 import com.dreamtea.depths_beyond.temp.TemplateRegion;
@@ -149,7 +150,7 @@ public class TriggerRegion extends Region {
 
         @Override
         public void sendSystemMessage(Component message) {
-
+            DepthsBeyondMod.LOGGER.info(message.getString());
         }
 
         @Override

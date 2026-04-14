@@ -6,6 +6,7 @@ import com.dreamtea.depths_beyond.dimension.regions.RegionType;
 import com.dreamtea.depths_beyond.stats.GameStats;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -14,7 +15,11 @@ public class RegionManager {
     public static final int TICK_FREQUENCY = 40;
     private final Map<RegionType, List<Region>> allRegions;
     public RegionManager(List<Region> regions){
-        allRegions = regions.stream().collect(Collectors.groupingBy(Region::getType));
+        if(regions.isEmpty()){
+            allRegions = new HashMap<>();
+        } else {
+            allRegions = regions.stream().collect(Collectors.groupingBy(Region::getType));
+        }
         initChestRegions();
     }
 

@@ -1,6 +1,7 @@
 package com.dreamtea.depths_beyond.effects.types;
 
 import com.dreamtea.depths_beyond.effects.CardExecutable;
+import com.dreamtea.depths_beyond.effects.CommandEffects;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
 
@@ -31,6 +32,8 @@ public record ExecutableType<T extends CardExecutable>(MapCodec<T> codec, String
             CardExecutable.GiveItem.CODEC, CardExecutable.GiveItem.DESCRIPTION));
     public static final ExecutableType<CardExecutable.ExecuteAs> EXECUTE_AS = register("as", new ExecutableType<>(
             CardExecutable.ExecuteAs.CODEC, CardExecutable.ExecuteAs.DESCRIPTION));
+    public static final ExecutableType<CommandEffects.ExecuteCommand> EXECUTE_COMMAND = register("cmd", new ExecutableType<>(
+            CommandEffects.ExecuteCommand.CODEC, CommandEffects.ExecuteCommand.DESCRIPTION));
 
     public static <T extends CardExecutable> ExecutableType<T> register(String id, ExecutableType<T> beanType) {
         return Registry.register(EXECUTABLE_TYPE_REGISTRY, ofDB(id), beanType);

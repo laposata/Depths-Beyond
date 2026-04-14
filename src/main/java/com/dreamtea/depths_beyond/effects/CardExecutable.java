@@ -1,6 +1,8 @@
 package com.dreamtea.depths_beyond.effects;
 
 import com.dreamtea.depths_beyond.cards.Card;
+import com.dreamtea.depths_beyond.cards.CardRegistry;
+import com.dreamtea.depths_beyond.dimension.regions.TriggerRegion;
 import com.dreamtea.depths_beyond.dungeon.DepthsBeyondGame;
 import com.dreamtea.depths_beyond.dungeon.DungeonRun;
 import com.dreamtea.depths_beyond.effects.types.CardPlacement;
@@ -10,7 +12,17 @@ import com.dreamtea.depths_beyond.stats.StatType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.ReportedException;
+import net.minecraft.commands.CommandSource;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.IntProviders;
@@ -18,6 +30,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -283,7 +296,7 @@ public interface CardExecutable {
 
         @Override
         public void cast(DungeonRun executingPlayer, DepthsBeyondGame game) {
-            Card card = game.getCardRegistry().getCard(cardId);
+            Card card = CardRegistry.get().getCard(cardId);
             int count = DungeonIntegerProvider.sample(quantity, executingPlayer.getRandom(), executingPlayer, game);
             for(int i = 0; i < count; i++){
                 executingPlayer.insertCard(card.withTag(Card.TEMPORARY_TAG), placement);
@@ -347,4 +360,5 @@ public interface CardExecutable {
             return ExecutableType.GIVE_ITEM;
         }
     }
+
 }

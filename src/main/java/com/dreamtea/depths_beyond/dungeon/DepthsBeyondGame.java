@@ -37,7 +37,6 @@ public class DepthsBeyondGame {
     private final Map<UUID, DungeonRun> playerStates;
     private final RegionManager regions;
     private int gameTime = 0;
-    private CardRegistry cardRegistry;
 
     public DepthsBeyondGame(DepthsBeyondConfig config, GameSpace gameSpace, List<Region> regions, ServerLevel world) {
         this.config = config;
@@ -46,11 +45,16 @@ public class DepthsBeyondGame {
         playerStates = new HashMap<>();
         this.regions = new RegionManager(regions);
     }
-    public CardRegistry getCardRegistry(){
-        return cardRegistry;
+    public void addPlayer(ServerPlayer p){
+        DungeonRun r = new DungeonRun(p);
+        playerStates.put(p.getUUID(), r);
     }
     public int getGameTime(){
         return gameTime;
+    }
+    public void tick(){
+        gameTime ++;
+        tickPlayers();
     }
 //    public static GameOpenProcedure open(GameOpenContext<DepthsBeyondConfig> context) {
 //        DepthsBeyondConfig config = context.config();
@@ -155,6 +159,14 @@ public class DepthsBeyondGame {
 //
 //       });
 //    }
+
+    private void tickPlayers(){
+         getAllPlayers().forEach(p -> {
+             p.tick(this, gameTime);
+             regions.tickAllRegions(gameTime, p.getStats());
+             tickLoot(p.getPlayer(), p);
+         });
+    }
 
     private void tickLoot(ServerPlayer player, DungeonRun run){
         LootRegion.tickLoot(regions.get(RegionType.LOOT), player, run);

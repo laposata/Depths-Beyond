@@ -5,7 +5,12 @@ import com.dreamtea.depths_beyond.cards.CardRegistry;
 import com.dreamtea.depths_beyond.cards.text.Keyword;
 import com.dreamtea.depths_beyond.cards.text.KeywordRegistry;
 import com.dreamtea.depths_beyond.cards.text.SpellbookWriter;
+import com.dreamtea.depths_beyond.config.DepthsBeyondConfig;
+import com.dreamtea.depths_beyond.dungeon.DepthsBeyondGame;
+import com.dreamtea.depths_beyond.dungeon.DungeonRun;
 import com.dreamtea.depths_beyond.effects.CardExecutable;
+import com.dreamtea.depths_beyond.imixin.ITrackGameRuns;
+import com.dreamtea.depths_beyond.temp.GameSpace;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.commands.CommandSourceStack;
@@ -18,6 +23,8 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 public class DataCommands {
     public static void registerCommands(){
@@ -27,7 +34,8 @@ public class DataCommands {
                             .then(Commands.literal("cards").executes(DataCommands::executeListCards))
                             .then(Commands.literal("keywords").executes(DataCommands::executeListKeywords))
                             .then(Commands.literal("books").executes(DataCommands::executeBooks))
-                            .then(Commands.literal("codecs").executes(DataCommands::executeCodecs))
+                            .then(Commands.literal("run").executes(DataCommands::startRun))
+                            .then(Commands.literal("start").executes(DataCommands::start))
                         );
         });
     }
@@ -61,17 +69,32 @@ public class DataCommands {
 
         return 1;
     }
-    private static int executeCodecs(CommandContext<CommandSourceStack> c) {
-
-        c.getSource().sendSystemMessage(
-                Component.literal(CardExecutable.AddStat.CODEC.toString())
-        );
-        c.getSource().sendSystemMessage(
-                Component.literal(CardExecutable.AddStat.CODEC.codec().toString())
-        );
-        c.getSource().sendSystemMessage(
-                Component.literal(CardExecutable.AddStat.CODEC.stable().toString())
-        );
-        return 1;
+    private static int startRun(CommandContext<CommandSourceStack> c){
+        ServerPlayer player = c.getSource().getPlayer();
+        ServerLevel world = c.getSource().getLevel();
+        if(world instanceof ITrackGameRuns itgr){
+            DepthsBeyondGame g = new DepthsBeyondGame(
+                    new DepthsBeyondConfig("", Map.of()),
+                    new GameSpace(),
+                    List.of(),
+                    world
+            );
+            itgr.setGame(g);
+            g.addPlayer(player);
+            return 1;
+        }
+        return 0;
     }
+    private static int start(CommandContext<CommandSourceStack> c){
+        ServerPlayer player = c.getSource().getPlayer();
+        ServerLevel world = c.getSource().getLevel();
+        if(world instanceof ITrackGameRuns itgr){
+            DepthsBeyondGame g = itgr.getGame();
+            List<DungeonRun> players = g.getPlayers(List.of(player.getUUID()));
+            players.get(0).startRun(g, g.getGameTime());
+            return 1;
+        }
+        return 0;
+    }
+
 }

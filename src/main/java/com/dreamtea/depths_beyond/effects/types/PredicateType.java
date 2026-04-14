@@ -1,6 +1,7 @@
 package com.dreamtea.depths_beyond.effects.types;
 
 import com.dreamtea.depths_beyond.effects.CardPredicate;
+import com.dreamtea.depths_beyond.effects.CommandEffects;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.MappedRegistry;
@@ -41,6 +42,8 @@ public record PredicateType<T extends CardPredicate>(MapCodec<T> codec, String d
             CardPredicate.Card.CODEC, CardPredicate.Card.DESCRIPTION));
     public static final PredicateType<CardPredicate.InventoryContains> INVENTORY_CONTAINS = register("inventory", new PredicateType<>(
             CardPredicate.InventoryContains.CODEC, CardPredicate.InventoryContains.DESCRIPTION));
+    public static final PredicateType<CommandEffects.IfCommand> IF_COMMAND = register("cmd", new PredicateType<>(
+            CommandEffects.IfCommand.CODEC, CommandEffects.IfCommand.DESCRIPTION));
 
     public static <T extends CardPredicate> PredicateType<T> register(String id, PredicateType<T> beanType) {
         return Registry.register(PREDICATE_TYPE_REGISTRY, ofDB(id), beanType);

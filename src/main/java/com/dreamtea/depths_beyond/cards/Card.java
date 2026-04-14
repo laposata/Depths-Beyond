@@ -2,10 +2,13 @@ package com.dreamtea.depths_beyond.cards;
 
 import com.dreamtea.depths_beyond.DepthsBeyondMod;
 import com.dreamtea.depths_beyond.cards.text.KeywordRegistry;
+import com.dreamtea.depths_beyond.dungeon.DepthsBeyondGame;
+import com.dreamtea.depths_beyond.dungeon.DungeonRun;
 import com.dreamtea.depths_beyond.effects.CardExecutable;
 import com.dreamtea.depths_beyond.effects.CardPredicate;
 import com.dreamtea.depths_beyond.effects.types.CardFilterType;
 import com.dreamtea.depths_beyond.effects.types.CardPriority;
+import com.dreamtea.depths_beyond.stats.StatType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
@@ -161,4 +164,13 @@ public record Card(
         return new CardExecutable.All(executables);
     }
 
+    public int getCastTime(DungeonRun player){
+        return player.getCastTime(this.castTime);
+    }
+    public void cast(DungeonRun player, DepthsBeyondGame game){
+        executable.cast(player, game);
+    }
+    public String briefDescriptor(){
+        return this.name + " " + this.priority + " " + this.castTime;
+    }
 }
