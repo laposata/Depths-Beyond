@@ -20,6 +20,7 @@ import java.util.List;
 import static com.dreamtea.depths_beyond.effects.EffectRegistries.FILTER_CODEC;
 
 public interface CardFilter {
+    Codec<CardFilter> CODEC = FILTER_CODEC;
     boolean filter(Card card, DungeonRun player, DepthsBeyondGame game);
     CardFilterType<?> getType();
 

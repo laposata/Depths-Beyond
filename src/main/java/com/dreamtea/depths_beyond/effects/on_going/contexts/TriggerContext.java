@@ -13,8 +13,6 @@ import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.IntProviders;
 
-import java.util.UUID;
-
 import static com.dreamtea.depths_beyond.effects.EffectRegistries.TRIGGERED_PREDICATE_CODEC;
 
 public class TriggerContext {
@@ -40,10 +38,11 @@ public class TriggerContext {
                 If 'predicate' is defined, will only do so if 'predicate' is true
                 """;
         @Override
-        public void execute(Trigger trigger, TriggerContext context, TriggerHistory history) {
+        public boolean execute(Trigger trigger, TriggerContext context, TriggerHistory history) {
             if(predicate == null || predicate.check(trigger, context, history)){
                 context.player.removeOngoingEffect(history.self);
             }
+            return false;
         }
 
         @Override
@@ -62,7 +61,7 @@ public class TriggerContext {
                 If number is -1, remove them all.
                 """;
         @Override
-        public void execute(Trigger trigger, TriggerContext context, TriggerHistory history) {
+        public boolean execute(Trigger trigger, TriggerContext context, TriggerHistory history) {
             int num = DungeonIntegerProvider.sample(number, context.random(), context.player, context.game);
             if(num <= -1 || num >= history.getCreated().size()){
                 while(!history.getCreated().isEmpty()){
@@ -70,13 +69,14 @@ public class TriggerContext {
                             history.getCreated().removeFirst()
                     );
                 }
-                return;
+                return true;
             }
             for(int i = 0; i < num && !history.getCreated().isEmpty(); i++){
                 context.player.removeOngoingEffect(
                         history.getCreated().remove(context.random().nextIntBetweenInclusive(0, history.getCreated().size() - 1))
                 );
             }
+            return true;
         }
 
         @Override
@@ -118,10 +118,11 @@ public class TriggerContext {
                 Add a new Ongoing effect of 'executable' which activates when 'trigger'
                 """;
         @Override
-        public void execute(Trigger trigger, TriggerContext context, TriggerHistory history) {
+        public boolean execute(Trigger trigger, TriggerContext context, TriggerHistory history) {
             OnGoingEffect effect = OnGoingEffect.createEffect(this.trigger, executable, context.currentTick);
             context.player.addOnGoingEffect(effect);
             history.create(effect.id());
+            return true;
         }
 
         @Override

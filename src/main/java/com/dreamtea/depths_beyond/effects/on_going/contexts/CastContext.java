@@ -49,11 +49,12 @@ public class CastContext extends TriggerContext {
                 """;
 
         @Override
-        public void execute(Trigger trigger, TriggerContext context, TriggerHistory history) {
+        public boolean execute(Trigger trigger, TriggerContext context, TriggerHistory history) {
             int num = DungeonIntegerProvider.sample(copies, context.random(), context.player, context.game);
             for(int i = 0; i < num; i++){
                 context.player.getDeck().insertCard(((CastContext)context).c, placement);
             }
+            return false;
         }
 
         @Override

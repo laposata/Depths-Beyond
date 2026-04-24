@@ -46,6 +46,7 @@ import static com.dreamtea.depths_beyond.effects.EffectRegistries.EXECUTABLE_COD
 import static com.dreamtea.depths_beyond.effects.EffectRegistries.PREDICATE_CODEC;
 
 public interface CardExecutable {
+    Codec<CardExecutable> CODEC = EXECUTABLE_CODEC;
     void cast(DungeonRun executingPlayer, DepthsBeyondGame game);
     ExecutableType<?> getType();
     public static All all(CardExecutable ... executables){

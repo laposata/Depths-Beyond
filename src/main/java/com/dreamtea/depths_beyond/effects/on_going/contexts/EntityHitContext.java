@@ -134,12 +134,13 @@ public class EntityHitContext extends TriggerContext {
                 If 'clear' removes all effects first.
                 """;
         @Override
-        public void execute(Trigger trigger, TriggerContext context, TriggerHistory history) {
+        public boolean execute(Trigger trigger, TriggerContext context, TriggerHistory history) {
             if(context instanceof EntityHitContext damageContext){
                applyEffect(damageContext.hit);
             } else if (context instanceof EntitySummonContext damageContext) {
                applyEffect(damageContext.entity);
             }
+            return false;
         }
 
         private void applyEffect(Entity entity){

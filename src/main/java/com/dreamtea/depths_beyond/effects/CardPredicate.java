@@ -3,6 +3,7 @@ package com.dreamtea.depths_beyond.effects;
 import com.dreamtea.depths_beyond.cards.CardRegistry;
 import com.dreamtea.depths_beyond.dungeon.DepthsBeyondGame;
 import com.dreamtea.depths_beyond.dungeon.DungeonRun;
+import com.dreamtea.depths_beyond.effects.on_going.TriggeredPredicate;
 import com.dreamtea.depths_beyond.effects.types.DungeonIntegerProvider;
 import com.dreamtea.depths_beyond.effects.types.FloatComparison;
 import com.dreamtea.depths_beyond.effects.types.PredicateType;
@@ -22,6 +23,8 @@ import static com.dreamtea.depths_beyond.effects.EffectRegistries.FILTER_CODEC;
 import static com.dreamtea.depths_beyond.effects.EffectRegistries.PREDICATE_CODEC;
 
 public interface CardPredicate {
+    Codec<CardPredicate> CODEC = PREDICATE_CODEC;
+
     boolean check(DungeonRun executingPlayer, DepthsBeyondGame game);
     PredicateType<?> getType();
 

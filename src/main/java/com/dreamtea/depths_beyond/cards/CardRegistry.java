@@ -21,7 +21,9 @@ public class CardRegistry {
         instance.cards.put(id, card);
         return instance;
     }
-
+    public static Card get(Identifier id){
+        return get().getCard(id);
+    }
     public static CardRegistry get(){
         return instance;
     }

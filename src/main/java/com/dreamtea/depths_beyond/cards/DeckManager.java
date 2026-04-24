@@ -1,28 +1,44 @@
 package com.dreamtea.depths_beyond.cards;
 
 import com.dreamtea.depths_beyond.DepthsBeyondMod;
+import com.dreamtea.depths_beyond.dungeon.DepthsBeyondGame;
+import com.dreamtea.depths_beyond.dungeon.DungeonRun;
 import com.dreamtea.depths_beyond.effects.types.CardPlacement;
 import com.dreamtea.depths_beyond.effects.types.CardPriority;
+import com.dreamtea.depths_beyond.save.SavableData;
+import com.dreamtea.depths_beyond.save.SaveData;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.level.saveddata.SavedData;
+import org.jspecify.annotations.NonNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class DeckManager {
+public class DeckManager extends SavedData implements SavableData<DeckManager.SavedDeckManager> {
     private final List<Card> startingDeck;
     private final List<Card> currentDeck;
     private final List<Card> discard;
     private final List<Card> generatedCards;
-
+    private final String playerId;
     private final RandomSource random;
-    public DeckManager(List<Card> cards, RandomSource r){
+
+    private DeckManager(List<Identifier> starting, List<Identifier> current, List<Identifier> discard, List<Identifier> generated, String playerId, RandomSource r){
         this.random = r;
+        this.playerId = playerId;
+        this.startingDeck = new ArrayList<>(starting.stream().map(CardRegistry::get).toList());
+        this.currentDeck = new ArrayList<>(current.stream().map(CardRegistry::get).toList());
+        this.discard = new ArrayList<>(discard.stream().map(CardRegistry::get).toList());
+        this.generatedCards = new ArrayList<>(generated.stream().map(CardRegistry::get).toList());
+    }
+    public DeckManager(List<Card> cards, DungeonRun run){
+        this.random = run.getRandom();
+        playerId = run.getPlayer().getStringUUID();
         this.startingDeck = new ArrayList<>(cards);
         this.currentDeck = shuffleDeck(this.startingDeck);
         this.discard = new ArrayList<>();
@@ -34,6 +50,7 @@ public class DeckManager {
         Card next = currentDeck.removeFirst();
         discard.add(next);
         DepthsBeyondMod.LOGGER.debug("Drawing: {}", next.briefDescriptor());
+        setDirty();
         return next;
     }
 
@@ -65,6 +82,7 @@ public class DeckManager {
             case LAST -> currentDeck.add(card);
             case RANDOM -> currentDeck.add(random.nextIntBetweenInclusive(0, currentDeck.size()), card);
         }
+        setDirty();
         generatedCards.add(card);
     }
     private List<Card> shuffleDeck(List<Card> cards){
@@ -108,6 +126,17 @@ public class DeckManager {
         };
     }
 
+    @Override
+    public SavedDeckManager createSaveData() {
+        return new SavedDeckManager(
+                startingDeck.stream().map(Card::id).toList(),
+                currentDeck.stream().map(Card::id).toList(),
+                discard.stream().map(Card::id).toList(),
+                generatedCards.stream().map(Card::id).toList(),
+                playerId
+        );
+    }
+
     public enum CardLocation implements StringRepresentable {
         STARTING {
             public List<Card> getDeck(DeckManager manager){
@@ -132,9 +161,36 @@ public class DeckManager {
         public static Codec<CardLocation> CODEC = StringRepresentable.fromEnum(CardLocation::values);
 
         @Override
-        public String getSerializedName() {
+        public @NonNull String getSerializedName() {
             return this.toString();
         }
 
+    }
+
+    public record SavedDeckManager(
+            List<Identifier> startingDeck,
+            List<Identifier> currentDeck,
+            List<Identifier> discard,
+            List<Identifier> generatedCards,
+            String playerId
+        ) implements SaveData<DeckManager> {
+        public static final MapCodec<SavedDeckManager> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                Identifier.CODEC.listOf().optionalFieldOf("s", List.of()).forGetter(SavedDeckManager::startingDeck),
+                Identifier.CODEC.listOf().optionalFieldOf("c", List.of()).forGetter(SavedDeckManager::currentDeck),
+                Identifier.CODEC.listOf().optionalFieldOf("d", List.of()).forGetter(SavedDeckManager::discard),
+                Identifier.CODEC.listOf().optionalFieldOf("g", List.of()).forGetter(SavedDeckManager::generatedCards),
+                Codec.STRING.fieldOf("p").forGetter(SavedDeckManager::playerId)
+        ).apply(instance, SavedDeckManager::new));
+        @Override
+        public DeckManager createData(DepthsBeyondGame game) {
+            return new DeckManager(
+                    startingDeck,
+                    currentDeck,
+                    discard,
+                    generatedCards,
+                    playerId,
+                    game.getPlayer(UUID.fromString(playerId)).getRandom()
+            );
+        }
     }
 }

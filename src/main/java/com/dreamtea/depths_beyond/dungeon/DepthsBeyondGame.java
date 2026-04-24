@@ -8,6 +8,9 @@ import com.dreamtea.depths_beyond.dimension.regions.Region;
 import com.dreamtea.depths_beyond.dimension.regions.RegionType;
 import com.dreamtea.depths_beyond.imixin.IPlayDepthsBelow;
 import com.dreamtea.depths_beyond.temp.GameSpace;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -44,6 +47,19 @@ public class DepthsBeyondGame {
         playerStates = new HashMap<>();
         this.regions = new RegionManager(regions);
     }
+    public DepthsBeyondGame(DepthsBeyondConfig config, GameSpace gameSpace, List<Region> regions, ServerLevel world, SavedDepthsBeyondGame savedGame) {
+        this.config = config;
+        this.gameSpace = gameSpace;
+        this.world = world;
+        playerStates = new HashMap<>();
+        this.regions = new RegionManager(regions);
+        savedGame.runs.forEach(r -> {
+            DungeonRun run = r.createData(this);
+            playerStates.put(run.getPlayer().getUUID(), run);
+        });
+        this.gameTime = savedGame.ticks;
+    }
+
     public void addPlayer(ServerPlayer p){
         DungeonRun r = new DungeonRun(p, this);
         playerStates.put(p.getUUID(), r);
@@ -184,8 +200,24 @@ public class DepthsBeyondGame {
     public List<DungeonRun> getPlayers(Collection<UUID> players){
         return players.stream().map(this.playerStates::get).toList();
     }
+    public DungeonRun getPlayer(UUID player){
+        return this.playerStates.getOrDefault(player, null);
+    }
 
     public Collection<DungeonRun> getAllPlayers(){
         return this.playerStates.values();
+    }
+
+    public SavedDepthsBeyondGame createData(){
+        return new SavedDepthsBeyondGame(
+                playerStates.values().stream().map(DungeonRun::createSaveData).toList(),
+                gameTime
+        );
+    }
+    public record SavedDepthsBeyondGame(List<DungeonRun.SavedDungeonRun> runs, int ticks) {
+        public static final MapCodec<SavedDepthsBeyondGame> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                DungeonRun.SavedDungeonRun.CODEC.codec().listOf().fieldOf("r").forGetter(SavedDepthsBeyondGame::runs),
+                Codec.INT.fieldOf("t").forGetter(SavedDepthsBeyondGame::ticks)
+        ).apply(instance, SavedDepthsBeyondGame::new));
     }
 }

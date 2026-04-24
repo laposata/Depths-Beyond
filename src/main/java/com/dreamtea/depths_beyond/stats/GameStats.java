@@ -1,12 +1,22 @@
 package com.dreamtea.depths_beyond.stats;
 
 
+import com.dreamtea.depths_beyond.dungeon.DepthsBeyondGame;
 import com.dreamtea.depths_beyond.dungeon.DungeonRun;
+import com.dreamtea.depths_beyond.save.SavableData;
+import com.dreamtea.depths_beyond.save.SaveData;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.saveddata.SavedData;
 import org.jetbrains.annotations.NotNull;
 
-public class GameStats {
+import java.util.UUID;
+
+public class GameStats extends SavedData implements SavableData<GameStats.SavedGameStats> {
     private float greed = 10;
     private float wit = 10;
     private float decadence = 10;
@@ -28,6 +38,7 @@ public class GameStats {
             case FOCUS -> focus += amount;
             case FEAR -> changeFear(amount);
         }
+        setDirty();
     }
     public RandomSource random(){
         return player.getRandom();
@@ -64,6 +75,7 @@ public class GameStats {
             }
         }
         player.triggerStatChange(diff, type);
+        setDirty();
     }
 
     public float getStat(StatType type){
@@ -93,6 +105,7 @@ public class GameStats {
         if(getPlayer().tickCount % GameConstants.BASE_FEAR_TICK_DELAY == 0){
             float amount = GameConstants.BASE_FEAR_TICK_VALUE * (1 + (getFearLevel()/10.0f));
             changeFear(amount);
+            setDirty();
             player.triggerStatChange(amount, StatType.FEAR);
         }
     }
@@ -124,4 +137,44 @@ public class GameStats {
         return DropType.GEAR;
     }
 
+    @Override
+    public SavedGameStats createSaveData() {
+        return new SavedGameStats(greed, wit, decadence, luck, focus, fear, player.getPlayer().getUUID());
+    }
+
+    public record SavedGameStats(
+            float greed,
+            float wit,
+            float decadence,
+            float luck,
+            float focus,
+            float fear,
+            UUID playerId
+    ) implements SaveData<GameStats> {
+        public static final MapCodec<SavedGameStats> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                Codec.FLOAT.optionalFieldOf("g", 10f).forGetter(SavedGameStats::greed),
+                Codec.FLOAT.optionalFieldOf("w", 10f).forGetter(SavedGameStats::wit),
+                Codec.FLOAT.optionalFieldOf("d", 10f).forGetter(SavedGameStats::decadence),
+                Codec.FLOAT.optionalFieldOf("l", 0f).forGetter(SavedGameStats::luck),
+                Codec.FLOAT.optionalFieldOf("o", 0f).forGetter(SavedGameStats::focus),
+                Codec.FLOAT.optionalFieldOf("f", 0f).forGetter(SavedGameStats::fear),
+                UUIDUtil.CODEC.fieldOf("p").forGetter(SavedGameStats::playerId)
+        ).apply(instance, SavedGameStats::new));
+
+        @Override
+        public GameStats createData(DepthsBeyondGame game) {
+            DungeonRun run = game.getPlayer(playerId);
+            if (run == null) {
+                return null;
+            }
+            GameStats g = new GameStats(run);
+            g.greed = greed;
+            g.wit = wit;
+            g.decadence = decadence;
+            g.luck = luck;
+            g.focus = focus;
+            g.fear = fear;
+            return g;
+        }
+    }
 }

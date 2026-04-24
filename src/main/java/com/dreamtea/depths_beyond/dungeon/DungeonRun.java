@@ -1,42 +1,70 @@
 package com.dreamtea.depths_beyond.dungeon;
 
+import com.dreamtea.depths_beyond.cards.Card;
 import com.dreamtea.depths_beyond.cards.CardRegistry;
 import com.dreamtea.depths_beyond.cards.DeckManager;
+import com.dreamtea.depths_beyond.data.PlayerPreGameState;
 import com.dreamtea.depths_beyond.effects.on_going.OnGoingEffect;
 import com.dreamtea.depths_beyond.effects.on_going.OnGoingEffectManager;
 import com.dreamtea.depths_beyond.effects.on_going.Trigger;
 import com.dreamtea.depths_beyond.effects.on_going.TriggeredExecutable;
 import com.dreamtea.depths_beyond.effects.types.CardPlacement;
-import com.dreamtea.depths_beyond.data.PlayerPreGameState;
-import com.dreamtea.depths_beyond.cards.Card;
 import com.dreamtea.depths_beyond.effects.types.ExecutedSpell;
+import com.dreamtea.depths_beyond.save.SavableData;
+import com.dreamtea.depths_beyond.save.SaveData;
 import com.dreamtea.depths_beyond.stats.DropType;
 import com.dreamtea.depths_beyond.stats.GameStats;
 import com.dreamtea.depths_beyond.stats.StatType;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.saveddata.SavedData;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.UUID;
 
-public class DungeonRun {
+public class DungeonRun extends SavedData implements SavableData<DungeonRun.SavedDungeonRun>{
     private final PlayerPreGameState initState;
     private final GameStats stats;
-    private boolean foundGoal;
-    private boolean started;
-    private ServerPlayer player;
+    private boolean foundGoal = false;
+    private boolean started = false;
+    private final ServerPlayer player;
     private final DeckManager deck;
     private final OnGoingEffectManager spellManager;
     private final DepthsBeyondGame game;
 
+    private DungeonRun(PlayerPreGameState initState, GameStats stats, boolean foundGoal, boolean started, ServerPlayer player, DeckManager deck, OnGoingEffectManager spellManager, DepthsBeyondGame game){
+        this.initState = initState;
+        this.stats = stats;
+        this.foundGoal = foundGoal;
+        this.started = started;
+        this.player = player;
+        this.deck = deck;
+        this.spellManager = spellManager;
+        this.game = game;
+    }
+
+    @Override
+    public boolean isDirty(){
+        return super.isDirty()
+                || stats.isDirty()
+                || deck.isDirty()
+                || spellManager.isDirty();
+    }
     public DungeonRun(ServerPlayer player, DepthsBeyondGame depthsBeyondGame){
         initState = new PlayerPreGameState(player);
         this.player = player;
         this.stats = new GameStats(this);
         this.deck = new DeckManager(
                 new ArrayList<>(CardRegistry.get().getAllCards()),
-                player.getRandom());
+                this);
         this.spellManager = new OnGoingEffectManager();
         this.game = depthsBeyondGame;
     }
@@ -109,6 +137,7 @@ public class DungeonRun {
     public void startRun(int time){
         started = true;
         drawCard(time);
+        setDirty();
     }
     public void tickPlayer(){
         stats.tickFear();
@@ -119,6 +148,7 @@ public class DungeonRun {
 
     public void findGoal(){
         this.foundGoal = true;
+        setDirty();
     }
 
     public boolean hasFoundGoal(){
@@ -151,4 +181,53 @@ public class DungeonRun {
         return (int)(stats.getFocusModifier() * cardCastInSec * 20);
     }
 
+    @Override
+    public SavedDungeonRun createSaveData() {
+        return new SavedDungeonRun(
+                initState,
+                stats.createSaveData(),
+                foundGoal,
+                started,
+                player.getUUID(),
+                deck.createSaveData(),
+                spellManager.createSaveData()
+        );
+    }
+
+    public record SavedDungeonRun(
+            PlayerPreGameState initState,
+            GameStats.SavedGameStats stats,
+            boolean foundGoal,
+            boolean started,
+            UUID player,
+            DeckManager.SavedDeckManager deckManager,
+            OnGoingEffectManager.SavedOnGoingEffectManager effectManager
+    ) implements SaveData<DungeonRun> {
+        public static final MapCodec<SavedDungeonRun> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                PlayerPreGameState.CODEC.fieldOf("i").forGetter(SavedDungeonRun::initState),
+                GameStats.SavedGameStats.CODEC.fieldOf("s").forGetter(SavedDungeonRun::stats),
+                Codec.BOOL.optionalFieldOf("g", false).forGetter(SavedDungeonRun::foundGoal),
+                Codec.BOOL.optionalFieldOf("st", true).forGetter(SavedDungeonRun::started),
+                UUIDUtil.CODEC.fieldOf("p").forGetter(SavedDungeonRun::player),
+                DeckManager.SavedDeckManager.CODEC.fieldOf("d").forGetter(SavedDungeonRun::deckManager),
+                OnGoingEffectManager.SavedOnGoingEffectManager.CODEC.fieldOf("e").forGetter(SavedDungeonRun::effectManager)
+        ).apply(instance, SavedDungeonRun::new));
+        @Override
+        public DungeonRun createData(DepthsBeyondGame game) {
+            try(ServerLevel l = game.level()){
+                return new DungeonRun(
+                        initState,
+                        stats.createData(game),
+                        foundGoal,
+                        started,
+                        (ServerPlayer) l.getPlayerByUUID(player),
+                        deckManager.createData(game),
+                        effectManager.createData(game),
+                        game
+                );
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 }

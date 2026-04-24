@@ -5,6 +5,7 @@ import com.dreamtea.depths_beyond.effects.EffectRegistries;
 import com.dreamtea.depths_beyond.effects.on_going.contexts.TriggerContext;
 import com.dreamtea.depths_beyond.effects.on_going.contexts.TriggerHistory;
 import com.dreamtea.depths_beyond.effects.types.DungeonIntegerProvider;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.valueproviders.ConstantInt;
@@ -15,7 +16,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public interface TriggeredExecutable {
-    public void execute(Trigger trigger, TriggerContext context, TriggerHistory history);
+    Codec<TriggeredExecutable> CODEC = EffectRegistries.TRIGGERED_EXECUTABLE_CODEC;
+    /***
+     * @param trigger The specific trigger that caused this effect
+     * @param context The trigger specific details
+     * @param history a collection of data about passed activations
+     * @return true if history changed, used to track if data needs to be saved.
+     */
+    public boolean execute(Trigger trigger, TriggerContext context, TriggerHistory history);
     public TriggeredExecutableType<?> getType();
     public record ExecuteIf(TriggeredPredicate predicate, TriggeredExecutable then, TriggeredExecutable otherwise) implements TriggeredExecutable{
         public static MapCodec<ExecuteIf> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
@@ -27,12 +35,13 @@ public interface TriggeredExecutable {
                 If 'predicate' then execute 'then' otherwise execute 'otherwise'
                 """;
         @Override
-        public void execute(Trigger trigger, TriggerContext context, TriggerHistory history) {
+        public boolean execute(Trigger trigger, TriggerContext context, TriggerHistory history) {
             if(predicate.check(trigger, context, history)){
-                then.execute(trigger, context, history);
+                return then.execute(trigger, context, history);
             } else if(otherwise != null){
-                otherwise.execute(trigger, context, history);
+                return otherwise.execute(trigger, context, history);
             }
+            return false;
         }
 
         @Override
@@ -51,10 +60,12 @@ public interface TriggeredExecutable {
                 Triggers all 'effects' in order
                 """;
         @Override
-        public void execute(Trigger trigger, TriggerContext context, TriggerHistory history) {
+        public boolean execute(Trigger trigger, TriggerContext context, TriggerHistory history) {
+            boolean hasStateChange = false;
             for (TriggeredExecutable effect : effects) {
-                effect.execute(trigger, context, history);
+                hasStateChange |= effect.execute(trigger, context, history);
             }
+            return hasStateChange;
         }
 
         @Override
@@ -76,15 +87,17 @@ public interface TriggeredExecutable {
                 If 'count' is greater than or equal to effects.length, then all effects are activated in a random order.
                 """;
         @Override
-        public void execute(Trigger trigger, TriggerContext context, TriggerHistory history) {
+        public boolean execute(Trigger trigger, TriggerContext context, TriggerHistory history) {
+            boolean hasStateChange = false;
             int num = DungeonIntegerProvider.sample(count, context.player.getRandom(), context.player, context.game);
-            if(num == 0) return;
+            if(num == 0) return false;
             List<TriggeredExecutable> remainingEffects = new ArrayList<>(List.of(effects));
             for(int i = 0; i < num && !remainingEffects.isEmpty(); i ++){
                 var n = context.player.getRandom().nextIntBetweenInclusive(0, remainingEffects.size() - 1);
-                remainingEffects.remove(n).execute(trigger, context, history);
+                hasStateChange |= remainingEffects.remove(n).execute(trigger, context, history);
             }
 
+            return hasStateChange;
         }
 
         @Override
@@ -102,11 +115,13 @@ public interface TriggeredExecutable {
                  Executes 'effect' a number of times equal to 'count'.
                 """;
         @Override
-        public void execute(Trigger trigger, TriggerContext context, TriggerHistory history) {
+        public boolean execute(Trigger trigger, TriggerContext context, TriggerHistory history) {
             int num = DungeonIntegerProvider.sample(count, context.player.getRandom(), context.player, context.game);
+            boolean hasStateChange = false;
             for(int i = 0; i < num; i ++){
-                effect.execute(trigger, context, history);
+                hasStateChange |= effect.execute(trigger, context, history);
             }
+            return hasStateChange;
         }
         @Override
         public TriggeredExecutableType<?> getType() {
@@ -122,8 +137,9 @@ public interface TriggeredExecutable {
                 Executes 'executable'
                 """;
         @Override
-        public void execute(Trigger trigger, TriggerContext context, TriggerHistory history) {
+        public boolean execute(Trigger trigger, TriggerContext context, TriggerHistory history) {
             executable.cast(context.player, context.game);
+            return false;
         }
         @Override
         public TriggeredExecutableType<?> getType() {

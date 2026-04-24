@@ -6,6 +6,7 @@ import com.dreamtea.depths_beyond.effects.on_going.contexts.TriggerContext;
 import com.dreamtea.depths_beyond.effects.on_going.contexts.TriggerHistory;
 import com.dreamtea.depths_beyond.effects.types.DungeonIntegerProvider;
 import com.dreamtea.depths_beyond.effects.types.FloatComparison;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.valueproviders.IntProvider;
@@ -14,6 +15,8 @@ import net.minecraft.util.valueproviders.IntProviders;
 import java.util.List;
 
 public interface TriggeredPredicate {
+    Codec<TriggeredPredicate> CODEC = EffectRegistries.TRIGGERED_PREDICATE_CODEC;
+
     public boolean check(Trigger trigger, TriggerContext context, TriggerHistory history);
     public TriggeredPredicateType<?> getType();
 

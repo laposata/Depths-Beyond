@@ -25,7 +25,6 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.IntProvider;
@@ -89,13 +88,14 @@ public class CommandEffects {
                 """;
 
         @Override
-        public void execute(Trigger trigger, TriggerContext context, TriggerHistory history) {
+        public boolean execute(Trigger trigger, TriggerContext context, TriggerHistory history) {
             if(context instanceof EntityHitContext damageContext){
                 CommandEffects.execute(damageContext.hit, context.game.level(), command, name);
             } else if (context instanceof EntitySummonContext damageContext) {
                 CommandEffects.execute(damageContext.entity, context.game.level(), command, name);
             }
 
+            return false;
         }
 
         @Override
