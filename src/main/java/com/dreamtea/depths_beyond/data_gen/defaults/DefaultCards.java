@@ -1,18 +1,14 @@
-package com.dreamtea.depths_beyond.cards;
+package com.dreamtea.depths_beyond.data_gen.defaults;
 
+import com.dreamtea.depths_beyond.cards.Card;
 import com.dreamtea.depths_beyond.effects.CardExecutable;
 import com.dreamtea.depths_beyond.effects.CommandEffects;
 import com.dreamtea.depths_beyond.effects.types.CardPlacement;
 import com.dreamtea.depths_beyond.effects.types.CardPriority;
 import com.dreamtea.depths_beyond.stats.StatType;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TextColor;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.item.Items;
 
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -21,8 +17,6 @@ import static com.dreamtea.depths_beyond.DepthsBeyondMod.ofDB;
 import static com.dreamtea.depths_beyond.effects.CardExecutable.*;
 import static com.dreamtea.depths_beyond.effects.CardPredicate.GoalComplete;
 import static com.dreamtea.depths_beyond.effects.CardPredicate.Not;
-import static com.dreamtea.depths_beyond.utils.ItemUtils.withCount;
-import static net.minecraft.ChatFormatting.*;
 
 public class DefaultCards {
     public static Card AddGreed = new Card(
@@ -259,6 +253,20 @@ public class DefaultCards {
             new CommandEffects.ExecuteCommand("say hello", "Command Card")
     );
 
+    public static Card BriefFocus = new Card(
+            "Brief Focus",
+            ofDB("brief_focus"),
+            "Gain 10 focus for 3 minutes",
+            30,
+            Set.of(),
+            CardPriority.NONE,
+            new AddStat(StatType.FOCUS, 10, false),
+            new DelayEffect(
+                    new AddStat(StatType.FOCUS, -10, false),
+                    (3 * 60 * 20)
+            )
+    );
+
 
     public static void Cards(BiConsumer<Identifier, Card> provider) {
         Flee.registerCard(provider);
@@ -282,5 +290,6 @@ public class DefaultCards {
         BoughtTime.registerCard(provider);
         BuyingTime.registerCard(provider);
         CommandCard.registerCard(provider);
+        BriefFocus.registerCard(provider);
     }
 }

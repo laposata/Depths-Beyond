@@ -91,7 +91,7 @@ public class DataCommands {
         if(world instanceof ITrackGameRuns itgr){
             DepthsBeyondGame g = itgr.getGame();
             List<DungeonRun> players = g.getPlayers(List.of(player.getUUID()));
-            players.get(0).startRun(g, g.getGameTime());
+            players.get(0).startRun(g.getGameTime());
             return 1;
         }
         return 0;

@@ -1,6 +1,5 @@
 package com.dreamtea.depths_beyond.dungeon;
 
-import com.dreamtea.depths_beyond.cards.CardRegistry;
 import com.dreamtea.depths_beyond.config.DepthsBeyondConfig;
 import com.dreamtea.depths_beyond.dimension.RegionManager;
 import com.dreamtea.depths_beyond.dimension.regions.GateRegion;
@@ -46,11 +45,14 @@ public class DepthsBeyondGame {
         this.regions = new RegionManager(regions);
     }
     public void addPlayer(ServerPlayer p){
-        DungeonRun r = new DungeonRun(p);
+        DungeonRun r = new DungeonRun(p, this);
         playerStates.put(p.getUUID(), r);
     }
     public int getGameTime(){
         return gameTime;
+    }
+    public ServerLevel level(){
+        return this.world;
     }
     public void tick(){
         gameTime ++;
@@ -88,7 +90,7 @@ public class DepthsBeyondGame {
         DungeonRun playerPreGameState = playerStates.get(player.getUUID());
         playerPreGameState.resetPlayerState(player);
         if(player instanceof IPlayDepthsBelow ipdb){
-            ipdb.leaveRun();
+            ipdb.depthsBeyond$leaveRun();
         }
     }
 
@@ -162,7 +164,7 @@ public class DepthsBeyondGame {
 
     private void tickPlayers(){
          getAllPlayers().forEach(p -> {
-             p.tick(this, gameTime);
+             p.tick(gameTime);
              regions.tickAllRegions(gameTime, p.getStats());
              tickLoot(p.getPlayer(), p);
          });

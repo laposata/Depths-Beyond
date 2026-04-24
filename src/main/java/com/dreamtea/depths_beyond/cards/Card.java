@@ -79,8 +79,8 @@ public record Card(
             Identifier.CODEC.fieldOf("id").forGetter(Card::id),
             ComponentSerialization.CODEC.fieldOf("description").forGetter(Card::description),
             Codec.INT.fieldOf("cast_time").forGetter(Card::castTime),
-            Codec.STRING.listOf().fieldOf("tags").orElse(List.of()).forGetter(i -> new ArrayList<>(i.tags)),
-            CardPriority.CODEC.fieldOf("priority").orElse(CardPriority.NONE).forGetter(Card::priority),
+            Codec.STRING.listOf().optionalFieldOf("tags", List.of()).forGetter(i -> new ArrayList<>(i.tags)),
+            CardPriority.CODEC.optionalFieldOf("priority", CardPriority.NONE).forGetter(Card::priority),
             EXECUTABLE_CODEC.fieldOf("executable").forGetter(Card::executable)
     ).apply(instance, Card::new));
 

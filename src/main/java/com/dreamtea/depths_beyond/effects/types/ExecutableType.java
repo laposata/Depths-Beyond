@@ -34,7 +34,12 @@ public record ExecutableType<T extends CardExecutable>(MapCodec<T> codec, String
             CardExecutable.ExecuteAs.CODEC, CardExecutable.ExecuteAs.DESCRIPTION));
     public static final ExecutableType<CommandEffects.ExecuteCommand> EXECUTE_COMMAND = register("cmd", new ExecutableType<>(
             CommandEffects.ExecuteCommand.CODEC, CommandEffects.ExecuteCommand.DESCRIPTION));
-
+    public static final ExecutableType<CardExecutable.TriggerOnce> TRIGGER_ONCE = register("trigger_once", new ExecutableType<>(
+            CardExecutable.TriggerOnce.CODEC, CardExecutable.TriggerOnce.DESCRIPTION));
+    public static final ExecutableType<CardExecutable.CreateOnGoing> ON_GOING = register("on_going", new ExecutableType<>(
+            CardExecutable.CreateOnGoing.CODEC, CardExecutable.CreateOnGoing.DESCRIPTION));
+    public static final ExecutableType<CardExecutable.DelayEffect> AFTER_DELAY = register("delay", new ExecutableType<>(
+            CardExecutable.DelayEffect.CODEC, CardExecutable.DelayEffect.DESCRIPTION));
     public static <T extends CardExecutable> ExecutableType<T> register(String id, ExecutableType<T> beanType) {
         return Registry.register(EXECUTABLE_TYPE_REGISTRY, ofDB(id), beanType);
     }

@@ -1,6 +1,7 @@
 package com.dreamtea.depths_beyond.stats;
 
 
+import com.dreamtea.depths_beyond.dungeon.DungeonRun;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import org.jetbrains.annotations.NotNull;
@@ -12,12 +13,13 @@ public class GameStats {
     private float luck = 0;
     private float focus = 0;
     private float fear = 0;
-    private final ServerPlayer player;
+    private final DungeonRun player;
 
-    public GameStats(@NotNull ServerPlayer player){
+    public GameStats(@NotNull DungeonRun player){
         this.player = player;
     }
     public void changeStat(StatType type, float amount){
+        player.triggerStatChange(amount, type);
         switch (type){
             case GREED -> greed += amount;
             case WIT -> wit += amount;
@@ -31,17 +33,37 @@ public class GameStats {
         return player.getRandom();
     }
     public ServerPlayer getPlayer() {
-        return player;
+        return player.getPlayer();
     }
     public void setStat(StatType type, float amount){
+        float diff = 0;
         switch (type){
-            case GREED -> greed = amount;
-            case WIT -> wit = amount;
-            case DECADENCE -> decadence = amount;
-            case LUCK -> luck = amount;
-            case FOCUS -> focus = amount;
-            case FEAR -> setFear(amount);
+            case GREED -> {
+                diff = amount - greed;
+                greed = amount;
+            }
+            case WIT -> {
+                diff = amount - wit;
+                wit = amount;
+            }
+            case DECADENCE -> {
+                diff = amount - decadence;
+                decadence = amount;
+            }
+            case LUCK -> {
+                diff = amount - luck;
+                luck = amount;
+            }
+            case FOCUS -> {
+                diff = amount - focus;
+                focus = amount;
+            }
+            case FEAR -> {
+                diff = amount - fear;
+                setFear(amount);
+            }
         }
+        player.triggerStatChange(diff, type);
     }
 
     public float getStat(StatType type){
@@ -56,20 +78,22 @@ public class GameStats {
     }
     private void changeFear(float amount){
         fear += amount;
-        player.experienceLevel = getFearLevel();
-        player.experienceProgress = (fear % GameConstants.FEAR_PER_LEVEL) / GameConstants.FEAR_PER_LEVEL;
+        getPlayer().experienceLevel = getFearLevel();
+        getPlayer().experienceProgress = (fear % GameConstants.FEAR_PER_LEVEL) / GameConstants.FEAR_PER_LEVEL;
     }
     private void setFear(float value){
         this.fear = value;
-        player.experienceLevel = getFearLevel();
-        player.experienceProgress = (fear % GameConstants.FEAR_PER_LEVEL) / GameConstants.FEAR_PER_LEVEL;
+        getPlayer().experienceLevel = getFearLevel();
+        getPlayer().experienceProgress = (fear % GameConstants.FEAR_PER_LEVEL) / GameConstants.FEAR_PER_LEVEL;
     }
     public void tickFear(){
         if(fear > GameConstants.FEAR_PER_LEVEL * GameConstants.MAX_FEAR_LEVEL){
             return;
         }
-        if(player.tickCount % GameConstants.BASE_FEAR_TICK_DELAY == 0){
-            changeFear(GameConstants.BASE_FEAR_TICK_VALUE * (1 + (getFearLevel()/10.0f)));
+        if(getPlayer().tickCount % GameConstants.BASE_FEAR_TICK_DELAY == 0){
+            float amount = GameConstants.BASE_FEAR_TICK_VALUE * (1 + (getFearLevel()/10.0f));
+            changeFear(amount);
+            player.triggerStatChange(amount, StatType.FEAR);
         }
     }
 

@@ -3,6 +3,13 @@ package com.dreamtea.depths_beyond.effects;
 import com.dreamtea.depths_beyond.DepthsBeyondMod;
 import com.dreamtea.depths_beyond.dungeon.DepthsBeyondGame;
 import com.dreamtea.depths_beyond.dungeon.DungeonRun;
+import com.dreamtea.depths_beyond.effects.on_going.Trigger;
+import com.dreamtea.depths_beyond.effects.on_going.TriggeredExecutable;
+import com.dreamtea.depths_beyond.effects.on_going.TriggeredExecutableType;
+import com.dreamtea.depths_beyond.effects.on_going.contexts.EntityHitContext;
+import com.dreamtea.depths_beyond.effects.on_going.contexts.EntitySummonContext;
+import com.dreamtea.depths_beyond.effects.on_going.contexts.TriggerContext;
+import com.dreamtea.depths_beyond.effects.on_going.contexts.TriggerHistory;
 import com.dreamtea.depths_beyond.effects.types.DungeonIntegerProvider;
 import com.dreamtea.depths_beyond.effects.types.ExecutableType;
 import com.dreamtea.depths_beyond.effects.types.FloatComparison;
@@ -23,8 +30,10 @@ import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.IntProviders;
+import net.minecraft.world.entity.Entity;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class CommandEffects {
@@ -49,7 +58,7 @@ public class CommandEffects {
             return PredicateType.IF_COMMAND;
         }
     }
-    public record ExecuteCommand(String command, String name) implements CardExecutable{
+    public record ExecuteCommand(String command, String name) implements CardExecutable {
         public static final MapCodec<ExecuteCommand> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
                 Codec.STRING.fieldOf("command").forGetter(ExecuteCommand::command),
                 Codec.STRING.optionalFieldOf("name", "Execute Command Card").forGetter(ExecuteCommand::name)
@@ -69,7 +78,33 @@ public class CommandEffects {
         }
     }
 
-    private static int execute(ServerPlayer player, ServerLevel world, String command, String name) {
+    public record ExecuteTriggeredCommand(String command, String name) implements TriggeredExecutable {
+        public static final MapCodec<ExecuteTriggeredCommand> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                Codec.STRING.fieldOf("command").forGetter(ExecuteTriggeredCommand::command),
+                Codec.STRING.optionalFieldOf("name", "Execute Command Card").forGetter(ExecuteTriggeredCommand::name)
+        ).apply(instance, ExecuteTriggeredCommand::new));
+        public static final String DESCRIPTION = """
+                Executes the given 'command' as the entity hit or summoned.
+                'name' is an optional field for debugging.
+                """;
+
+        @Override
+        public void execute(Trigger trigger, TriggerContext context, TriggerHistory history) {
+            if(context instanceof EntityHitContext damageContext){
+                CommandEffects.execute(damageContext.hit, context.game.level(), command, name);
+            } else if (context instanceof EntitySummonContext damageContext) {
+                CommandEffects.execute(damageContext.entity, context.game.level(), command, name);
+            }
+
+        }
+
+        @Override
+        public TriggeredExecutableType<?> getType() {
+            return TriggeredExecutableType.COMMAND;
+        }
+    }
+
+    private static int execute(Entity player, ServerLevel world, String command, String name) {
         MinecraftServer minecraftServer = world.getServer();
         var executor = new EffectCommandExecutor(player, name);
         AtomicInteger output = new AtomicInteger();
@@ -94,9 +129,9 @@ public class CommandEffects {
     }
 
     static class EffectCommandExecutor implements CommandSource {
-        private final ServerPlayer player;
+        private final Entity player;
         private final String name;
-        public EffectCommandExecutor(ServerPlayer player, String name){
+        public EffectCommandExecutor(Entity player, String name){
             this.player = player;
             this.name = name;
         }
@@ -106,11 +141,11 @@ public class CommandEffects {
                     this,
                     player.position(),
                     player.getRotationVector(),
-                    player.level(),
+                    (ServerLevel) player.level(),
                     LevelBasedPermissionSet.MODERATOR,
                     name,
                     Component.literal(name),
-                    player.level().getServer(),
+                    Objects.requireNonNull(player.level().getServer()),
                     player
             );
         }
@@ -122,12 +157,12 @@ public class CommandEffects {
 
         @Override
         public boolean acceptsSuccess() {
-            return false;
+            return true;
         }
 
         @Override
         public boolean acceptsFailure() {
-            return false;
+            return true;
         }
 
         @Override

@@ -5,9 +5,16 @@ import com.dreamtea.depths_beyond.cards.CardRegistry;
 import com.dreamtea.depths_beyond.dimension.regions.TriggerRegion;
 import com.dreamtea.depths_beyond.dungeon.DepthsBeyondGame;
 import com.dreamtea.depths_beyond.dungeon.DungeonRun;
+import com.dreamtea.depths_beyond.effects.on_going.OnGoingEffect;
+import com.dreamtea.depths_beyond.effects.on_going.Trigger;
+import com.dreamtea.depths_beyond.effects.on_going.TriggeredExecutable;
+import com.dreamtea.depths_beyond.effects.on_going.TriggeredPredicate;
+import com.dreamtea.depths_beyond.effects.on_going.contexts.TriggerContext;
+import com.dreamtea.depths_beyond.effects.on_going.contexts.TriggerHistory;
 import com.dreamtea.depths_beyond.effects.types.CardPlacement;
 import com.dreamtea.depths_beyond.effects.types.DungeonIntegerProvider;
 import com.dreamtea.depths_beyond.effects.types.ExecutableType;
+import com.dreamtea.depths_beyond.effects.types.FloatComparison;
 import com.dreamtea.depths_beyond.stats.StatType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -361,4 +368,75 @@ public interface CardExecutable {
         }
     }
 
+    record CreateOnGoing(Trigger trigger, TriggeredExecutable effect) implements CardExecutable {
+        public static final MapCodec<CreateOnGoing> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+           Trigger.CODEC.fieldOf("trigger").forGetter(CreateOnGoing::trigger),
+           EffectRegistries.TRIGGERED_EXECUTABLE_CODEC.fieldOf("effect").forGetter(CreateOnGoing::effect)
+        ).apply(instance, CreateOnGoing::new));
+        public static final String DESCRIPTION = """
+                Creates an ongoing 'effect' that activates every time 'trigger' happens.
+                """;
+        @Override
+        public void cast(DungeonRun executingPlayer, DepthsBeyondGame game) {
+            executingPlayer.addOnGoingEffect(this.trigger, this.effect, game.getGameTime());
+        }
+
+        @Override
+        public ExecutableType<?> getType() {
+            return ExecutableType.ON_GOING;
+        }
+    }
+    record TriggerOnce(Trigger trigger, TriggeredExecutable effect, TriggeredPredicate predicate) implements CardExecutable {
+        public static final MapCodec<TriggerOnce> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                Trigger.CODEC.fieldOf("trigger").forGetter(TriggerOnce::trigger),
+                EffectRegistries.TRIGGERED_EXECUTABLE_CODEC.fieldOf("effect").forGetter(TriggerOnce::effect),
+                EffectRegistries.TRIGGERED_PREDICATE_CODEC.fieldOf("predicate").forGetter(TriggerOnce::predicate)
+        ).apply(instance, TriggerOnce::new));
+
+        public static final String DESCRIPTION = """
+                Upon 'trigger', checks 'predicate', if true, executes 'effect' then deletes this ongoing effect.
+                if 'predicate' is null, activates the next time 'trigger'.
+                """;
+        @Override
+        public void cast(DungeonRun executingPlayer, DepthsBeyondGame game) {
+            TriggeredExecutable effect = new TriggeredExecutable.All(this.effect, new TriggerContext.Remove(null));
+            if(predicate != null){
+                effect = new TriggeredExecutable.ExecuteIf(predicate, effect, null);
+            }
+            executingPlayer.addOnGoingEffect(trigger, effect, game.getGameTime());
+        }
+
+        @Override
+        public ExecutableType<?> getType() {
+            return ExecutableType.TRIGGER_ONCE;
+        }
+    }
+    record DelayEffect(TriggeredExecutable effect, IntProvider timeInTicks) implements CardExecutable {
+        public static final MapCodec<DelayEffect> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+                EffectRegistries.TRIGGERED_EXECUTABLE_CODEC.fieldOf("effect").forGetter(DelayEffect::effect),
+                IntProviders.CODEC.fieldOf("timeInTicks").forGetter(DelayEffect::timeInTicks)
+        ).apply(instance, DelayEffect::new));
+        public static final String DESCRIPTION = """
+                Triggers 'effect' after 'timeInTicks' ticks. After that, this effect is deleted
+                """;
+        public DelayEffect(CardExecutable effect, int timeInTicks){
+            this(new TriggeredExecutable.Of(effect), ConstantInt.of(timeInTicks));
+        }
+        @Override
+        public void cast(DungeonRun executingPlayer, DepthsBeyondGame game) {
+            TriggeredExecutable effect;
+            effect = new TriggeredExecutable.All(this.effect, new TriggerContext.Remove(null));
+            TriggeredPredicate whenOfAge = new TriggerContext.Age(
+                    DungeonIntegerProvider.sample(timeInTicks, executingPlayer.getRandom(), executingPlayer, game),
+                    FloatComparison.GREATER_THEN_EQUAL
+            );
+            effect = new TriggeredExecutable.ExecuteIf(whenOfAge, effect, null);
+            executingPlayer.addOnGoingEffect(Trigger.TICK, effect, game.getGameTime());
+        }
+
+        @Override
+        public ExecutableType<?> getType() {
+            return ExecutableType.AFTER_DELAY;
+        }
+    }
 }

@@ -1,14 +1,15 @@
-package com.dreamtea.depths_beyond.effects;
+package com.dreamtea.depths_beyond.effects.on_going;
 
+import com.dreamtea.depths_beyond.effects.SpellQueue;
+import com.dreamtea.depths_beyond.effects.on_going.contexts.TriggerContext;
 import com.dreamtea.depths_beyond.effects.types.ExecutedSpell;
-import com.dreamtea.depths_beyond.effects.types.OnGoingTrigger;
 
 import java.util.*;
 
 
 public class OnGoingEffectManager {
     private final Map<String, OnGoingEffect> effectsById;
-    private final Map<OnGoingTrigger, Set<OnGoingEffect>> effectsByTrigger;
+    private final Map<Trigger, Set<OnGoingEffect>> effectsByTrigger;
     private final SpellQueue spellQueue;
 
     public OnGoingEffectManager(){
@@ -23,6 +24,11 @@ public class OnGoingEffectManager {
     public void addSpellCast(ExecutedSpell spell, int currentTime, boolean normalCast){
         int castTime = spell.time();
         spellQueue.addSpell(spell, castTime + currentTime, normalCast);
+    }
+
+    public void triggerEffects(Trigger trigger, TriggerContext context){
+        effectsByTrigger.getOrDefault(trigger, Set.of()).forEach(effect ->
+                effect.onTrigger().execute(trigger, context, effect.history()));
     }
 
     public void addTriggerEffect(OnGoingEffect effect){

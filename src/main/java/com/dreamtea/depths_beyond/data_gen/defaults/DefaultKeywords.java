@@ -1,12 +1,10 @@
-package com.dreamtea.depths_beyond.cards.text;
+package com.dreamtea.depths_beyond.data_gen.defaults;
 
-import com.dreamtea.depths_beyond.cards.Card;
+import com.dreamtea.depths_beyond.cards.text.Keyword;
 import net.minecraft.resources.Identifier;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.BiConsumer;
 
 import static com.dreamtea.depths_beyond.DepthsBeyondMod.ofDB;
