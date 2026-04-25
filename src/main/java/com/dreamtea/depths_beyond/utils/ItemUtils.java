@@ -1,17 +1,12 @@
 package com.dreamtea.depths_beyond.utils;
-import com.dreamtea.depths_beyond.cards.Card;
-import com.dreamtea.depths_beyond.effects.CardPredicate;
+
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.network.Filterable;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.WrittenBookItem;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.ItemLore;
-import net.minecraft.world.item.component.WrittenBookContent;
 
 import java.util.ArrayList;
 

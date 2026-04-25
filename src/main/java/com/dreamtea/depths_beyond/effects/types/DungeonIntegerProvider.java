@@ -2,7 +2,6 @@ package com.dreamtea.depths_beyond.effects.types;
 
 import com.dreamtea.depths_beyond.dungeon.DepthsBeyondGame;
 import com.dreamtea.depths_beyond.dungeon.DungeonRun;
-import com.dreamtea.depths_beyond.effects.DungeonIntProviders;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;

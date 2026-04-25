@@ -1,15 +1,11 @@
 package com.dreamtea.depths_beyond.effects.on_going;
 
-import com.dreamtea.depths_beyond.effects.CardExecutable;
-import com.dreamtea.depths_beyond.dungeon.DepthsBeyondGame;
-import com.dreamtea.depths_beyond.dungeon.DungeonRun;
 import com.dreamtea.depths_beyond.effects.EffectRegistries;
 import com.dreamtea.depths_beyond.effects.on_going.contexts.TriggerHistory;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import java.util.Map;
 import java.util.UUID;
 
 public record OnGoingEffect(String id, Trigger trigger, TriggeredExecutable onTrigger, TriggerHistory history)  {

@@ -5,22 +5,23 @@ import com.dreamtea.depths_beyond.dungeon.DepthsBeyondGame;
 import com.dreamtea.depths_beyond.dungeon.DungeonRun;
 import com.dreamtea.depths_beyond.effects.types.CardPlacement;
 import com.dreamtea.depths_beyond.effects.types.CardPriority;
+import com.dreamtea.depths_beyond.save.DungeonRunAttachmentHandler;
 import com.dreamtea.depths_beyond.save.SavableData;
 import com.dreamtea.depths_beyond.save.SaveData;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.world.level.saveddata.SavedData;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class DeckManager extends SavedData implements SavableData<DeckManager.SavedDeckManager> {
+public class DeckManager implements SavableData<DeckManager.SavedDeckManager> {
     private final List<Card> startingDeck;
     private final List<Card> currentDeck;
     private final List<Card> discard;
@@ -44,13 +45,18 @@ public class DeckManager extends SavedData implements SavableData<DeckManager.Sa
         this.discard = new ArrayList<>();
         this.generatedCards = new ArrayList<>();
         DepthsBeyondMod.LOGGER.debug(this.currentDeck.stream().map(Card::briefDescriptor).collect(Collectors.joining("\n")));
+        DungeonRunAttachmentHandler.setDeck(run.getPlayer(), CardLocation.STARTING, startingDeck);
+        DungeonRunAttachmentHandler.setDeck(run.getPlayer(), CardLocation.CURRENT, currentDeck);
+        DungeonRunAttachmentHandler.setDeck(run.getPlayer(), CardLocation.DISCARD, discard);
+        DungeonRunAttachmentHandler.setDeck(run.getPlayer(), CardLocation.GENERATED, generatedCards);
     }
 
-    public Card pullNextCard(){
+    public Card pullNextCard(ServerPlayer player){
         Card next = currentDeck.removeFirst();
         discard.add(next);
         DepthsBeyondMod.LOGGER.debug("Drawing: {}", next.briefDescriptor());
-        setDirty();
+        DungeonRunAttachmentHandler.setDeck(player, CardLocation.CURRENT, currentDeck);
+        DungeonRunAttachmentHandler.setDeck(player, CardLocation.DISCARD, discard);
         return next;
     }
 
@@ -76,14 +82,15 @@ public class DeckManager extends SavedData implements SavableData<DeckManager.Sa
         };
     }
 
-    public void insertCard(Card card, CardPlacement placement){
+    public void insertCard(Card card, CardPlacement placement, ServerPlayer player){
         switch (placement){
             case NEXT -> currentDeck.addFirst(card);
             case LAST -> currentDeck.add(card);
             case RANDOM -> currentDeck.add(random.nextIntBetweenInclusive(0, currentDeck.size()), card);
         }
-        setDirty();
         generatedCards.add(card);
+        DungeonRunAttachmentHandler.setDeck(player, CardLocation.CURRENT, currentDeck);
+        DungeonRunAttachmentHandler.setDeck(player, CardLocation.GENERATED, generatedCards);
     }
     private List<Card> shuffleDeck(List<Card> cards){
         Map<CardPriority, List<Card>> byPriority = shuffleAll(cards).stream().collect(Collectors.groupingBy(Card::priority));

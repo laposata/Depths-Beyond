@@ -1,12 +1,14 @@
 package com.dreamtea.depths_beyond.cards.text;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 public class KeywordRegistry {
     private final Map<String, Keyword> keywordsByTag;

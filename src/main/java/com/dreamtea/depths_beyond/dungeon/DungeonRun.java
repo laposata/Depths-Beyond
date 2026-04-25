@@ -24,13 +24,14 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.saveddata.SavedData;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
 
-public class DungeonRun extends SavedData implements SavableData<DungeonRun.SavedDungeonRun>{
+import static com.dreamtea.depths_beyond.save.DungeonRunAttachmentHandler.*;
+
+public class DungeonRun implements SavableData<DungeonRun.SavedDungeonRun>{
     private final PlayerPreGameState initState;
     private final GameStats stats;
     private boolean foundGoal = false;
@@ -51,15 +52,9 @@ public class DungeonRun extends SavedData implements SavableData<DungeonRun.Save
         this.game = game;
     }
 
-    @Override
-    public boolean isDirty(){
-        return super.isDirty()
-                || stats.isDirty()
-                || deck.isDirty()
-                || spellManager.isDirty();
-    }
     public DungeonRun(ServerPlayer player, DepthsBeyondGame depthsBeyondGame){
         initState = new PlayerPreGameState(player);
+        setInitState(player, initState);
         this.player = player;
         this.stats = new GameStats(this);
         this.deck = new DeckManager(
@@ -74,11 +69,11 @@ public class DungeonRun extends SavedData implements SavableData<DungeonRun.Save
     }
 
     public void insertCard(Card card, CardPlacement placement){
-        deck.insertCard(card, placement);
+        deck.insertCard(card, placement, player);
     }
 
     public void tick(int time){
-        if(spellManager.tick(time)){
+        if(spellManager.tick(time, player)){
             drawCard(time);
         }
         if(time % 20 == 10){
@@ -105,7 +100,7 @@ public class DungeonRun extends SavedData implements SavableData<DungeonRun.Save
     }
 
     public void drawCard(int time){
-        Card card = deck.pullNextCard();
+        Card card = deck.pullNextCard(player);
         addSpellToQueue(time, card, true);
     }
 
@@ -113,19 +108,20 @@ public class DungeonRun extends SavedData implements SavableData<DungeonRun.Save
         spellManager.addSpellCast(
                 new ExecutedSpell(c, this, game),
                 time,
-                normalCast
+                normalCast,
+                player
         );
     }
 
     public void removeOngoingEffect(String id){
-        spellManager.removeTrigger(id);
+        spellManager.removeTrigger(id, player);
     }
 
     public void addOnGoingEffect(OnGoingEffect effect){
-        spellManager.addTriggerEffect(effect);
+        spellManager.addTriggerEffect(effect, player);
     }
     public void addOnGoingEffect(Trigger trigger, TriggeredExecutable executable, int tick){
-        spellManager.addTriggerEffect(OnGoingEffect.createEffect(trigger, executable, tick));
+        spellManager.addTriggerEffect(OnGoingEffect.createEffect(trigger, executable, tick), player);
     }
     public DeckManager getDeck(){
         return deck;
@@ -137,7 +133,7 @@ public class DungeonRun extends SavedData implements SavableData<DungeonRun.Save
     public void startRun(int time){
         started = true;
         drawCard(time);
-        setDirty();
+        setStarted(player, started);
     }
     public void tickPlayer(){
         stats.tickFear();
@@ -148,7 +144,7 @@ public class DungeonRun extends SavedData implements SavableData<DungeonRun.Save
 
     public void findGoal(){
         this.foundGoal = true;
-        setDirty();
+        setFoundGoal(player, foundGoal);
     }
 
     public boolean hasFoundGoal(){

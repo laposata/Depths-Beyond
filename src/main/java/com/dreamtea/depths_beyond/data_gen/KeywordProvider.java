@@ -1,7 +1,7 @@
 package com.dreamtea.depths_beyond.data_gen;
 
-import com.dreamtea.depths_beyond.data_gen.defaults.DefaultKeywords;
 import com.dreamtea.depths_beyond.cards.text.Keyword;
+import com.dreamtea.depths_beyond.data_gen.defaults.DefaultKeywords;
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricCodecDataProvider;
 import net.minecraft.core.HolderLookup;

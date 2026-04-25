@@ -3,6 +3,7 @@ package com.dreamtea.depths_beyond.stats;
 
 import com.dreamtea.depths_beyond.dungeon.DepthsBeyondGame;
 import com.dreamtea.depths_beyond.dungeon.DungeonRun;
+import com.dreamtea.depths_beyond.save.DungeonRunAttachmentHandler;
 import com.dreamtea.depths_beyond.save.SavableData;
 import com.dreamtea.depths_beyond.save.SaveData;
 import com.mojang.serialization.Codec;
@@ -11,12 +12,11 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.saveddata.SavedData;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-public class GameStats extends SavedData implements SavableData<GameStats.SavedGameStats> {
+public class GameStats implements SavableData<GameStats.SavedGameStats> {
     private float greed = 10;
     private float wit = 10;
     private float decadence = 10;
@@ -38,7 +38,11 @@ public class GameStats extends SavedData implements SavableData<GameStats.SavedG
             case FOCUS -> focus += amount;
             case FEAR -> changeFear(amount);
         }
-        setDirty();
+        DungeonRunAttachmentHandler.setStat(
+                player.getPlayer(),
+                type,
+                getStat(type)
+        );
     }
     public RandomSource random(){
         return player.getRandom();
@@ -75,7 +79,11 @@ public class GameStats extends SavedData implements SavableData<GameStats.SavedG
             }
         }
         player.triggerStatChange(diff, type);
-        setDirty();
+        DungeonRunAttachmentHandler.setStat(
+                player.getPlayer(),
+                type,
+                getStat(type)
+        );
     }
 
     public float getStat(StatType type){
@@ -105,7 +113,11 @@ public class GameStats extends SavedData implements SavableData<GameStats.SavedG
         if(getPlayer().tickCount % GameConstants.BASE_FEAR_TICK_DELAY == 0){
             float amount = GameConstants.BASE_FEAR_TICK_VALUE * (1 + (getFearLevel()/10.0f));
             changeFear(amount);
-            setDirty();
+            DungeonRunAttachmentHandler.setStat(
+                    player.getPlayer(),
+                    StatType.FEAR,
+                    fear
+            );
             player.triggerStatChange(amount, StatType.FEAR);
         }
     }

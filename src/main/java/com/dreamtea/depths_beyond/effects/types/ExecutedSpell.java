@@ -4,7 +4,6 @@ import com.dreamtea.depths_beyond.cards.Card;
 import com.dreamtea.depths_beyond.cards.CardRegistry;
 import com.dreamtea.depths_beyond.dungeon.DepthsBeyondGame;
 import com.dreamtea.depths_beyond.dungeon.DungeonRun;
-import com.dreamtea.depths_beyond.effects.CardExecutable;
 import com.dreamtea.depths_beyond.save.SavableData;
 import com.dreamtea.depths_beyond.save.SaveData;
 import com.mojang.serialization.Codec;

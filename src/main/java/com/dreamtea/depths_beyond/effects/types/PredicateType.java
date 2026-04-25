@@ -2,11 +2,8 @@ package com.dreamtea.depths_beyond.effects.types;
 
 import com.dreamtea.depths_beyond.effects.CardPredicate;
 import com.dreamtea.depths_beyond.effects.CommandEffects;
-import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceKey;
 
 import static com.dreamtea.depths_beyond.DepthsBeyondMod.ofDB;
 import static com.dreamtea.depths_beyond.effects.EffectRegistries.PREDICATE_TYPE_REGISTRY;

@@ -3,7 +3,6 @@ package com.dreamtea.depths_beyond.effects;
 import com.dreamtea.depths_beyond.cards.CardRegistry;
 import com.dreamtea.depths_beyond.dungeon.DepthsBeyondGame;
 import com.dreamtea.depths_beyond.dungeon.DungeonRun;
-import com.dreamtea.depths_beyond.effects.on_going.TriggeredPredicate;
 import com.dreamtea.depths_beyond.effects.types.DungeonIntegerProvider;
 import com.dreamtea.depths_beyond.effects.types.FloatComparison;
 import com.dreamtea.depths_beyond.effects.types.PredicateType;
@@ -12,7 +11,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.valueproviders.*;
+import net.minecraft.util.valueproviders.ConstantInt;
+import net.minecraft.util.valueproviders.IntProvider;
+import net.minecraft.util.valueproviders.IntProviders;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.ItemStack;
 

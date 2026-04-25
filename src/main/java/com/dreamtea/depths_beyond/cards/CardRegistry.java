@@ -2,7 +2,9 @@ package com.dreamtea.depths_beyond.cards;
 
 import net.minecraft.resources.Identifier;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CardRegistry {
     private static final CardRegistry instance = new CardRegistry();

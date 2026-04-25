@@ -8,7 +8,6 @@ import com.dreamtea.depths_beyond.effects.CardExecutable;
 import com.dreamtea.depths_beyond.effects.CardPredicate;
 import com.dreamtea.depths_beyond.effects.types.CardFilterType;
 import com.dreamtea.depths_beyond.effects.types.CardPriority;
-import com.dreamtea.depths_beyond.stats.StatType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
